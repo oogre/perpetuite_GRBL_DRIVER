@@ -2,7 +2,7 @@
   Perpetuite - FSHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-07 17:59:35
-  @Last Modified time: 2020-08-07 18:14:17
+  @Last Modified time: 2020-08-21 13:42:25
 \*----------------------------------------*/
 const fs = require('fs');
 
@@ -13,12 +13,12 @@ class FSHelperTools{
 			let remaining = '';
 			input.on('data', data => {
 				remaining += data;
-				let index = remaining.indexOf('\r\n');
+				let index = remaining.indexOf('\n');
 				while (index > -1) {
 					let line = remaining.substring(0, index);
 					remaining = remaining.substring(index + 2);
 					func(line);
-					index = remaining.indexOf('\r\n');
+					index = remaining.indexOf('\n');
 				}
 			});
 			input.on('end', () => {
