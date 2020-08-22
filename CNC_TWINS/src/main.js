@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 16:25:40
+  @Last Modified time: 2020-08-22 16:32:54
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -97,7 +97,9 @@ program
 					gCodeHelper.run();
 				})
 				.on("ping", data => {
-					syncHelper.send("pong");
+					if(GCODE_READY){
+						syncHelper.send("pong");
+					}
 				})
 				.on("pong", data => {
 					if(GCODE_READY && !IS_RUNNING){
