@@ -12,5 +12,6 @@
         "useBuiltIns": "usage",
       }
     ]
-  ]
+  ],
+  "plugins" : ["@babel/plugin-proposal-throw-expressions"]
 }
