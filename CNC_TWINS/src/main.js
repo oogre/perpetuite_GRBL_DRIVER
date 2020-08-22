@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 15:43:21
+  @Last Modified time: 2020-08-22 16:09:00
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -117,6 +117,55 @@ program
 			process.exit();
 		});
 	});
+
+
+program
+	.command('syncRun')
+	.option('-sN, --synchSerialName <synchSerialName>', 'Serial name for Sync channel', "/dev/ttyAMA0")
+	.option('-sB, --synchBaudrate <synchBaudrate>', 'Serial baudrate for Sync channel', 115200)
+	
+	.description('run for perpetuity in sync with another machine')
+	.action(({synchSerialName, synchBaudrate, ...options}) => {
+		synchBaudrate = parseInt(synchBaudrate);
+		TIMEOUT_DELAY = parseInt(gCodeTimeout);
+
+		SerialPort.list()
+		.then(serialList => {
+			const verbose = options.parent.verbose;
+			const synchSerial = serialList.find(detail => detail.path.includes(synchSerialName));
+			
+			if(!synchSerial){
+				return kill("Unknown Sync terminal");
+			}
+			const syncHelper = new SyncHelper({
+				serialName : synchSerial.path, 
+				serialBaudrate : synchBaudrate, 
+				verbose : verbose
+			});
+			
+			const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT"), syncHelper.PING_INTERVAL*1.5);
+		
+			process.on('SIGINT', () => {
+					kill("kill requested")
+			});
+
+			syncHelper.on("ready", () => {
+				//gCodeHelper.run();
+			})
+			.on("ping", data => {
+				syncHelper.send("pong");
+			})
+			.on("pong", data => {
+				clearTimeout(PING_TIMEOUT_HANDLER);
+				PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
+			}).run();
+		})
+		.catch(error => {
+			console.log(error);
+			process.exit();
+		});
+	});
+
 
 
 program
