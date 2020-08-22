@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 16:09:00
+  @Last Modified time: 2020-08-22 16:10:25
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -127,7 +127,6 @@ program
 	.description('run for perpetuity in sync with another machine')
 	.action(({synchSerialName, synchBaudrate, ...options}) => {
 		synchBaudrate = parseInt(synchBaudrate);
-		TIMEOUT_DELAY = parseInt(gCodeTimeout);
 
 		SerialPort.list()
 		.then(serialList => {
