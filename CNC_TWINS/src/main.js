@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 16:32:54
+  @Last Modified time: 2020-08-22 16:35:27
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -105,10 +105,10 @@ program
 					if(GCODE_READY && !IS_RUNNING){
 						IS_RUNNING = true;
 						console.log("RUN");
-						/*sendLine();
+						sendLine();
 						TIMEOUT_HANDLER = timeoutBuilder();
 						sendLine();
-						sendLine();*/
+						sendLine();
 					}
 					clearTimeout(PING_TIMEOUT_HANDLER);
 					PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
