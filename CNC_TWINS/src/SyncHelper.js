@@ -2,7 +2,7 @@
   GCODE - SyncHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:52:03
-  @Last Modified time: 2020-08-22 16:12:02
+  @Last Modified time: 2020-08-22 16:41:44
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -18,7 +18,7 @@ export default class SyncHelper{
 		this.verbose = verbose;
 		this.serialPort;
 		this.PING_HANDLER;
-		this.PING_INTERVAL = 2000;
+		this.PING_INTERVAL = 1000;
 		this.eventHandlers = {
 			ready : [()=>{
 				this.PING_HANDLER = setInterval(() => this.send("ping"), this.PING_INTERVAL);;
