@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-08-22 14:37:41
+  @Last Modified time: 2020-08-22 16:52:36
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -19,7 +19,8 @@ export default class GCodeHelper{
 		this.eventHandlers = {
 			ready : [],
 			commandDone : [],
-			error : []
+			error : [],
+			alarm : []
 		}
 	}
 	run(){
@@ -29,6 +30,9 @@ export default class GCodeHelper{
 			}
 			if(line.includes("error")){
 				return this.triger(`error`, line);
+			}
+			if(line.includes("ALARM")){
+				return this.triger(`alarm`, line);
 			}
 
 			if(line.includes("Grbl")){

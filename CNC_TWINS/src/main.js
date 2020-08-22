@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 16:48:13
+  @Last Modified time: 2020-08-22 16:52:39
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -93,6 +93,7 @@ program
 					//TIMEOUT_HANDLER = timeoutBuilder();
 				})
 				.on(`error`, error => kill(error, gCodeHelper));
+				.on(`alarm`, error => kill(error, gCodeHelper));
 				
 				syncHelper.on("ready", () => {
 					gCodeHelper.run();
