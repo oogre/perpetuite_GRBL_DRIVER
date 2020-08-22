@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 14:29:41
+  @Last Modified time: 2020-08-22 15:18:44
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -15,6 +15,12 @@ import SerialPort from "serialport";
 let TIMEOUT_DELAY = 10000;
 let TIMEOUT_HANDLER;
 let PING_TIMEOUT_HANDLER;
+
+const kill = (message, gCodeHelper) => {
+	console.log(message);
+	gCodeHelper && gCodeHelper.send("!");
+	setTimeout(process.exit, 500);
+}
 
 program
 	.option('-v, --verbose', 'verbose');
@@ -43,10 +49,10 @@ program
 			const synchSerial = serialList.find(detail => detail.path.includes(synchSerialName));
 			const gCodeSerial = serialList.find(detail => detail.path.includes(gCodeSerialName));
 			if(!synchSerial){
-				throw new Error("Unknown Sync terminal");
+				return kill("Unknown Sync terminal");
 			}	
 			if(!gCodeSerial){
-				throw new Error("Unknown GRBL terminal");
+				return kill("Unknown GRBL terminal");
 			}	
 
 			if(verbose) console.log(`Loading GCodeFile : ${gCodeFileInput}`);
@@ -63,27 +69,28 @@ program
 					serialBaudrate : gCodeBaudrate, 
 					verbose : verbose
 				});
-				const pingTimeoutBuilder = () => setTimeout(() => throw new Error("SYNC TIMEOUT"), syncHelper.PING_INTERVAL*1.5);
-				const timeoutBuilder = () => setTimeout(() => throw new Error("GCODE TIMEOUT"), TIMEOUT_DELAY);
+				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", gCodeHelper), syncHelper.PING_INTERVAL*1.5);
+				const timeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", gCodeHelper), TIMEOUT_DELAY);
 				const sendLine = () => {
 					const line = GCodeData.shift();
 					gCodeHelper.send(line);
 					GCodeData.push(line);
 				}
-					
+
 				gCodeHelper.on(`ready`, () => {
+					/*
 					sendLine();
 					TIMEOUT_HANDLER = timeoutBuilder();
 					sendLine();
 					sendLine();
-					
+					*/
 				})
 				.on(`commandDone`, () => {
 					clearTimeout(TIMEOUT_HANDLER);
 					sendLine();
 					TIMEOUT_HANDLER = timeoutBuilder();
 				})
-				.on(`error`, error => throw new Error(error));
+				.on(`error`, error => kill(error, gCodeHelper));
 				
 				syncHelper.on("ready", () => {
 					gCodeHelper.run();
@@ -122,48 +129,44 @@ program
 			const verbose = options.parent.verbose;
 			const gCodeSerial = serialList.find(detail => detail.path.includes(gCodeSerialName));
 			if(!gCodeSerial){
-				throw new Error("Unknown GRBL terminal");
+				return kill("Unknown GRBL terminal");
 			}	
+			const gCodeHelper = new GCodeHelper({
+				serialName : gCodeSerial.path, 
+				serialBaudrate : gCodeBaudrate, 
+				verbose : verbose
+			});
 
 			if(verbose) console.log(`Loading GCodeFile : ${gCodeFileInput}`);
 			FSHelper.loadFileInArray(gCodeFileInput)
 			.then(GCodeData => {
 				if(verbose) console.log(`GCode : `, GCodeData);
-				const gCodeHelper = new GCodeHelper({
-					serialName : gCodeSerial.path, 
-					serialBaudrate : gCodeBaudrate, 
-					verbose : verbose
-				});
-				const pingTimeoutBuilder = () => setTimeout(() => throw new Error("SYNC TIMEOUT"), syncHelper.PING_INTERVAL*1.5);
-				const timeoutBuilder = () => setTimeout(() => throw new Error("GCODE TIMEOUT"), TIMEOUT_DELAY);
+				const timeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", gCodeHelper), TIMEOUT_DELAY);
 				const sendLine = () => {
 					const line = GCodeData.shift();
 					gCodeHelper.send(line);
 					GCodeData.push(line);
 				}
-					
+
+				process.on('SIGINT', () => {
+  					kill("kill requested", gCodeHelper)
+				});
+
 				gCodeHelper.on(`ready`, () => {
-					console.log("ready");
-					/*
 					sendLine();
 					TIMEOUT_HANDLER = timeoutBuilder();
 					sendLine();
 					sendLine();
-					*/
 				})
 				.on(`commandDone`, () => {
 					clearTimeout(TIMEOUT_HANDLER);
 					sendLine();
 					TIMEOUT_HANDLER = timeoutBuilder();
 				})
-				.on(`error`, error => throw new Error(error));
+				.on(`error`, error => kill(error, gCodeHelper));
 				
 				gCodeHelper.run();
 			});
-		})
-		.catch(error => {
-			console.log(error);
-			process.exit();
 		});
 	});
 

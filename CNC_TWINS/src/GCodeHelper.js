@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-08-22 14:16:33
+  @Last Modified time: 2020-08-22 14:37:41
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -31,20 +31,22 @@ export default class GCodeHelper{
 				return this.triger(`error`, line);
 			}
 
-			if(!this.initialized){
-				this.initialized = true;
-				setTimeout(()=>{
+			if(line.includes("Grbl")){
+				return this.send("$X");
+			}
+			if(line.includes("ok")){
+				if(!this.initialized){
+					this.initialized = true;
 					this.homing = true;
 					this.send("$H");
-				}, 2000);
-			}
-			
-			if(line.includes("ok")){
-				if(this.homing){
-					this.homing = false;
-					return this.triger(`ready`);
 				}
-				this.triger(`commandDone`);
+				else if(this.homing){
+					this.homing = false;
+					this.triger(`ready`);
+				}
+				else {
+					this.triger(`commandDone`);
+				}
 			}
 		}
 		
