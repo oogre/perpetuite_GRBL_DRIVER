@@ -3,8 +3,13 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 17:19:01
+  @Last Modified time: 2020-08-22 17:25:05
 \*----------------------------------------*/
+
+// Eraser Fail to Homing...
+// ok comes just after command send not at move finished
+
+
 
 import { program } from 'commander';
 import SyncHelper from './SyncHelper.js';
