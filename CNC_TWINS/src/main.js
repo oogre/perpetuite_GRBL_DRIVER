@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 16:19:58
+  @Last Modified time: 2020-08-22 16:25:40
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -88,7 +88,7 @@ program
 				})
 				.on(`commandDone`, () => {
 					clearTimeout(TIMEOUT_HANDLER);
-					sendLine();
+					//sendLine();
 					TIMEOUT_HANDLER = timeoutBuilder();
 				})
 				.on(`error`, error => kill(error, gCodeHelper));
