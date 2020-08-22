@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 16:53:42
+  @Last Modified time: 2020-08-22 17:00:26
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -18,9 +18,10 @@ let PING_TIMEOUT_HANDLER;
 let GCODE_READY = false;
 let IS_RUNNING = false;
 
-const kill = (message, gCodeHelper) => {
+const kill = (message, {gCodeHelper, syncHelper}) => {
 	console.log(message);
 	gCodeHelper && gCodeHelper.send("!");
+	syncHelper && syncHelper.send("!");
 	setTimeout(process.exit, 500);
 }
 
@@ -71,8 +72,8 @@ program
 			FSHelper.loadFileInArray(gCodeFileInput)
 			.then(GCodeData => {
 				if(verbose) console.log(`GCode : `, GCodeData);
-				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", gCodeHelper), syncHelper.PING_INTERVAL*1.5);
-				const timeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", gCodeHelper), TIMEOUT_DELAY);
+				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), syncHelper.PING_INTERVAL*1.5);
+				const timeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), TIMEOUT_DELAY);
 				const sendLine = () => {
 					const line = GCodeData.shift();
 					gCodeHelper.send(line);
@@ -80,7 +81,7 @@ program
 				}
 
 				process.on('SIGINT', () => {
-  					kill("kill requested", gCodeHelper)
+  					kill("kill requested", {gCodeHelper, syncHelper})
 				});
 
 				gCodeHelper.on(`ready`, () => {
@@ -92,11 +93,14 @@ program
 					//sendLine();
 					//TIMEOUT_HANDLER = timeoutBuilder();
 				})
-				.on(`error`, error => kill(error, gCodeHelper))
-				.on(`alarm`, error => kill(error, gCodeHelper));
+				.on(`error`, error => kill(error, {gCodeHelper, syncHelper}))
+				.on(`alarm`, error => kill(error, {gCodeHelper, syncHelper}));
 				
 				syncHelper.on("ready", () => {
 					gCodeHelper.run();
+				})
+				.on("!", () => {
+					kill("KILL ORDERED", {gCodeHelper})
 				})
 				.on("ping", data => {
 					if(GCODE_READY){
