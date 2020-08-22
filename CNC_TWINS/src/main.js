@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 17:15:34
+  @Last Modified time: 2020-08-22 17:19:01
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -111,8 +111,8 @@ program
 					if(GCODE_READY && !IS_RUNNING){
 						IS_RUNNING = true;
 						console.log("RUN");
-						sendLine();
-						gCodeHelper.send("G28.1");
+						//sendLine();
+						gCodeHelper.send("G28");
 						//TIMEOUT_HANDLER = timeoutBuilder();
 						//sendLine();
 						//sendLine();
