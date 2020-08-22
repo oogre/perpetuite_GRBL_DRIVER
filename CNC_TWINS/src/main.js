@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 15:18:44
+  @Last Modified time: 2020-08-22 15:43:21
 \*----------------------------------------*/
 
 import { program } from 'commander';
@@ -15,6 +15,8 @@ import SerialPort from "serialport";
 let TIMEOUT_DELAY = 10000;
 let TIMEOUT_HANDLER;
 let PING_TIMEOUT_HANDLER;
+let GCODE_READY = false;
+let IS_RUNNING = false;
 
 const kill = (message, gCodeHelper) => {
 	console.log(message);
@@ -50,25 +52,25 @@ program
 			const gCodeSerial = serialList.find(detail => detail.path.includes(gCodeSerialName));
 			if(!synchSerial){
 				return kill("Unknown Sync terminal");
-			}	
+			}
+			const syncHelper = new SyncHelper({
+				serialName : synchSerial.path, 
+				serialBaudrate : synchBaudrate, 
+				verbose : verbose
+			});
 			if(!gCodeSerial){
 				return kill("Unknown GRBL terminal");
-			}	
+			}
+			const gCodeHelper = new GCodeHelper({
+				serialName : gCodeSerial.path, 
+				serialBaudrate : gCodeBaudrate, 
+				verbose : verbose
+			});
 
 			if(verbose) console.log(`Loading GCodeFile : ${gCodeFileInput}`);
 			FSHelper.loadFileInArray(gCodeFileInput)
 			.then(GCodeData => {
 				if(verbose) console.log(`GCode : `, GCodeData);
-				const syncHelper = new SyncHelper({
-					serialName : synchSerial.path, 
-					serialBaudrate : synchBaudrate, 
-					verbose : verbose
-				});
-				const gCodeHelper = new GCodeHelper({
-					serialName : gCodeSerial.path, 
-					serialBaudrate : gCodeBaudrate, 
-					verbose : verbose
-				});
 				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", gCodeHelper), syncHelper.PING_INTERVAL*1.5);
 				const timeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", gCodeHelper), TIMEOUT_DELAY);
 				const sendLine = () => {
@@ -77,13 +79,12 @@ program
 					GCodeData.push(line);
 				}
 
+				process.on('SIGINT', () => {
+  					kill("kill requested", gCodeHelper)
+				});
+
 				gCodeHelper.on(`ready`, () => {
-					/*
-					sendLine();
-					TIMEOUT_HANDLER = timeoutBuilder();
-					sendLine();
-					sendLine();
-					*/
+					GCODE_READY = true;
 				})
 				.on(`commandDone`, () => {
 					clearTimeout(TIMEOUT_HANDLER);
@@ -99,6 +100,13 @@ program
 					syncHelper.send("pong");
 				})
 				.on("pong", data => {
+					if(GCODE_READY && !IS_RUNNING){
+						IS_RUNNING = true;
+						sendLine();
+						TIMEOUT_HANDLER = timeoutBuilder();
+						sendLine();
+						sendLine();
+					}
 					clearTimeout(PING_TIMEOUT_HANDLER);
 					PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
 				}).run();
