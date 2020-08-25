@@ -2,7 +2,7 @@
   GCODE - SyncHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:52:03
-  @Last Modified time: 2020-08-22 16:41:44
+  @Last Modified time: 2020-08-25 22:38:14
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -61,6 +61,15 @@ export default class SyncHelper{
 	on(eventName, fnc){
 		this.eventHandlers[eventName] = this.eventHandlers[eventName] || [];
 		this.eventHandlers[eventName].push(fnc);
+		return this;
+	}
+	once(eventName, fnc){
+		this.eventHandlers[eventName] = this.eventHandlers[eventName] || [];
+		const wrappedFnc = event => {
+			fnc(event);
+			fnc=()=>{};
+		}
+		this.eventHandlers[eventName].push(wrappedFnc);
 		return this;
 	}
 	send(eventName, data){

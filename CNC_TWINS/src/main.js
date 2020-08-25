@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-22 17:25:05
+  @Last Modified time: 2020-08-25 23:11:03
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -20,9 +20,7 @@ import SerialPort from "serialport";
 let TIMEOUT_DELAY = 10000;
 let TIMEOUT_HANDLER;
 let PING_TIMEOUT_HANDLER;
-let GCODE_READY = false;
-let IS_RUNNING = false;
-
+let STATE_ID = 0 ; 
 const kill = (message, {gCodeHelper, syncHelper}) => {
 	console.log(message);
 	gCodeHelper && gCodeHelper.send("!");
@@ -36,6 +34,8 @@ program
 
 program
 	.command('run')
+	.option('-sD, --synchDisabled <synchDisabled>', 'Disabling Sync channel', false)
+	.option('-sN, --synchSerialName <synchSerialName>', 'Serial name for Sync channel', "/dev/ttyAMA0")
 	.option('-sN, --synchSerialName <synchSerialName>', 'Serial name for Sync channel', "/dev/ttyAMA0")
 	.option('-sB, --synchBaudrate <synchBaudrate>', 'Serial baudrate for Sync channel', 115200)
 	
@@ -46,8 +46,10 @@ program
 	.option('-t, --gCodeTimeout <gCodeTimeout>', 'Timeout to process each GCODE line', 30000)
 
 	.description('run for perpetuity in sync with another machine')
-	.action(({synchSerialName, synchBaudrate, gCodeSerialName, gCodeBaudrate, gCodeFileInput, gCodeTimeout, ...options}) => {
-		synchBaudrate = parseInt(synchBaudrate);
+	.action(({synchDisabled, synchSerialName, synchBaudrate, gCodeSerialName, gCodeBaudrate, gCodeFileInput, gCodeTimeout, ...options}) => {
+		const synchEnabled = !synchDisabled;
+		
+		synchBaudrate = parseInt(synchBaudrate);	
 		gCodeBaudrate = parseInt(gCodeBaudrate);
 		TIMEOUT_DELAY = parseInt(gCodeTimeout);
 
@@ -56,14 +58,16 @@ program
 			const verbose = options.parent.verbose;
 			const synchSerial = serialList.find(detail => detail.path.includes(synchSerialName));
 			const gCodeSerial = serialList.find(detail => detail.path.includes(gCodeSerialName));
-			if(!synchSerial){
+			
+			if(synchEnabled && !synchSerial){
 				return kill("Unknown Sync terminal");
 			}
-			const syncHelper = new SyncHelper({
+			const syncHelper = synchEnabled && new SyncHelper({
 				serialName : synchSerial.path, 
 				serialBaudrate : synchBaudrate, 
 				verbose : verbose
 			});
+			
 			if(!gCodeSerial){
 				return kill("Unknown GRBL terminal");
 			}
@@ -79,52 +83,67 @@ program
 				if(verbose) console.log(`GCode : `, GCodeData);
 				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), syncHelper.PING_INTERVAL*1.5);
 				const timeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), TIMEOUT_DELAY);
-				const sendLine = () => {
-					const line = GCodeData.shift();
-					gCodeHelper.send(line);
-					GCodeData.push(line);
-				}
 
-				process.on('SIGINT', () => {
+				process.on('SIGINT', event => {
   					kill("kill requested", {gCodeHelper, syncHelper})
 				});
 
-				gCodeHelper.on(`ready`, () => {
-					GCODE_READY = true;
+				gCodeHelper.once(`ready`, event => {
+					STATE_ID ++;
+					const action = () => gCodeHelper.goHome();
+					synchEnabled ? syncHelper.once("sync", event => action()) : action();
 				})
-				.on(`commandDone`, () => {
-					console.log("commandDone");
-					//clearTimeout(TIMEOUT_HANDLER);
-					//sendLine();
-					//TIMEOUT_HANDLER = timeoutBuilder();
+				.once("atHome", event => {
+					STATE_ID ++;
+					const action = () => gCodeHelper.goStartPosition(GCodeData.shift());
+					synchEnabled ? syncHelper.once("sync", event => action()) : action();
 				})
-				.on(`error`, error => kill(error, {gCodeHelper, syncHelper}))
-				.on(`alarm`, error => kill(error, {gCodeHelper, syncHelper}));
-				
-				syncHelper.on("ready", () => {
+				.once("atStartPoint", event => {
+					STATE_ID ++;
+					const action = () => {
+						const sendLine = () => {
+							const line = GCodeData.shift();
+							gCodeHelper.send(line);
+							GCodeData.push(line);
+						}
+						sendLine();
+						gCodeHelper.on("emptyBuffer", event => {
+							if(gCodeHelper.isRunning()){
+								sendLine();
+							}
+						});
+					}
+					synchEnabled ? syncHelper.once("sync", event => action()) : action();
+				})
+				.on("ALARM", event => {
+					kill("ALARM received >>> kill", {gCodeHelper, syncHelper})
+				})
+				.on("ERROR", event => {
+					kill("ERROR received >>> kill", {gCodeHelper, syncHelper})
+				});
+				if(!synchEnabled){
 					gCodeHelper.run();
-				})
-				.on("!", () => {
-					kill("KILL ORDERED", {gCodeHelper})
-				})
-				.on("ping", data => {
-					if(GCODE_READY){
-						syncHelper.send("pong");
-					}
-				})
-				.on("pong", data => {
-					if(GCODE_READY && !IS_RUNNING){
-						IS_RUNNING = true;
-						console.log("RUN");
-						//sendLine();
-						gCodeHelper.send("G28");
-						//TIMEOUT_HANDLER = timeoutBuilder();
-						//sendLine();
-						//sendLine();
-					}
-					clearTimeout(PING_TIMEOUT_HANDLER);
-					PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
-				}).run();
+				}else{
+					syncHelper.on("ready", () => {
+						gCodeHelper.run();
+					})
+					.on("!", () => {
+						kill("KILL ORDERED", {gCodeHelper})
+					})
+					.on("ping", event => {
+						syncHelper.send("pong", {
+							state : gCodeHelper.getMachineInfo().STATE,
+							stateID : STATE_ID
+						});
+					})
+					.on("pong", event => {
+						if(event.stateID == STATE_ID){
+							syncHelper.triger("sync", event);
+						}
+						clearTimeout(PING_TIMEOUT_HANDLER);
+						PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
+					}).run();
+				}
 			});
 		})
 		.catch(error => {
