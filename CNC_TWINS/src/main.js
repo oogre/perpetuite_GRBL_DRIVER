@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-25 23:11:03
+  @Last Modified time: 2020-08-25 23:42:46
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -21,16 +21,17 @@ let TIMEOUT_DELAY = 10000;
 let TIMEOUT_HANDLER;
 let PING_TIMEOUT_HANDLER;
 let STATE_ID = 0 ; 
-const kill = (message, {gCodeHelper, syncHelper}) => {
-	console.log(message);
-	gCodeHelper && gCodeHelper.send("!");
-	syncHelper && syncHelper.send("!");
-	setTimeout(process.exit, 500);
-}
 
 program
 	.option('-v, --verbose', 'verbose');
 
+program
+	.command('list')
+	.description('Get Serial List')
+	.action(async ({...options}) => {
+		const serialList = await SerialPort.list();
+		console.log(serialList);
+	});
 
 program
 	.command('run')
@@ -58,9 +59,14 @@ program
 			const verbose = options.parent.verbose;
 			const synchSerial = serialList.find(detail => detail.path.includes(synchSerialName));
 			const gCodeSerial = serialList.find(detail => detail.path.includes(gCodeSerialName));
-			
+			const kill = (message, {gCodeHelper=false, syncHelper=false}) => {
+				console.log(message);
+				gCodeHelper && gCodeHelper.send("!");
+				syncHelper && syncHelper.send("!");
+				setTimeout(process.exit, 500);
+			}
 			if(synchEnabled && !synchSerial){
-				return kill("Unknown Sync terminal");
+				return kill("Unknown Sync terminal", {});
 			}
 			const syncHelper = synchEnabled && new SyncHelper({
 				serialName : synchSerial.path, 
@@ -69,7 +75,7 @@ program
 			});
 			
 			if(!gCodeSerial){
-				return kill("Unknown GRBL terminal");
+				return kill("Unknown GRBL terminal", {});
 			}
 			const gCodeHelper = new GCodeHelper({
 				serialName : gCodeSerial.path, 
@@ -151,15 +157,6 @@ program
 			process.exit();
 		});
 	});
-
-program
-	.command('list')
-	.description('Get Serial List')
-	.action(async ({...options}) => {
-		const serialList = await SerialPort.list();
-		console.log(serialList);
-	});
-
 
 program.parse(process.argv);
 
