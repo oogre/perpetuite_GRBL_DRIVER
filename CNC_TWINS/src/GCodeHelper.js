@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-08-31 14:21:45
+  @Last Modified time: 2020-08-31 14:23:45
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -40,7 +40,7 @@ class GCodeHelperTool{
 	}
 	static receive(line, verbose=false){
 		if(line.includes("Grbl")){
-			runStatusGrabber();
+			GCodeHelperTool.runStatusGrabber();
 		}
 		else if(line.match(/(<(IDLE|HOLD|RUN|HOMING|JOG|ALARM|DOOR),(MPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*)),(WPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*))>)/gi)){
 			[GCodeHelperTool.MACHINE.POS.x, GCodeHelperTool.MACHINE.POS.y] = line.match(/([-+]?\d*\.?\d*)/ig).filter(a => a.length>0);
