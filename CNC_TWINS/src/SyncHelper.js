@@ -2,7 +2,7 @@
   GCODE - SyncHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:52:03
-  @Last Modified time: 2020-08-31 15:09:49
+  @Last Modified time: 2020-08-31 15:10:51
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -54,7 +54,7 @@ export default class SyncHelper{
 		clearInterval(this.PING_HANDLER);
 	}
 	triger(eventName, event=``){
-		(this.eventHandlers[data.eventName]||[]).map(fnc=>fnc(event));
+		(this.eventHandlers[eventName]||[]).map(fnc=>fnc(event));
 		return this;
 	}
 	on(eventName, fnc){
