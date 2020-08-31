@@ -2,7 +2,7 @@
   GCODE - SyncHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:52:03
-  @Last Modified time: 2020-08-25 22:38:14
+  @Last Modified time: 2020-08-27 20:01:48
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -12,16 +12,15 @@ const HOST_NAME = require('os').hostname();
 
 
 export default class SyncHelper{
-	constructor({serialName, serialBaudrate, verbose}){
+	constructor({serialName, serialBaudrate, pingInterval, verbose}){
 		this.serialName = serialName;
 		this.serialBaudrate = serialBaudrate;
 		this.verbose = verbose;
 		this.serialPort;
 		this.PING_HANDLER;
-		this.PING_INTERVAL = 1000;
 		this.eventHandlers = {
 			ready : [()=>{
-				this.PING_HANDLER = setInterval(() => this.send("ping"), this.PING_INTERVAL);;
+				this.PING_HANDLER = setInterval(() => this.send("ping"), pingInterval);
 			}]
 		};
 	}

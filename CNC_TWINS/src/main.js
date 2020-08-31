@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-25 23:42:46
+  @Last Modified time: 2020-08-27 20:10:46
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -17,8 +17,7 @@ import GCodeHelper from './GCodeHelper.js';
 import FSHelper from './FSHelper.js';
 import SerialPort from "serialport";
 
-let TIMEOUT_DELAY = 10000;
-let TIMEOUT_HANDLER;
+let GCODE_TIMEOUT_HANDLER;
 let PING_TIMEOUT_HANDLER;
 let STATE_ID = 0 ; 
 
@@ -39,24 +38,26 @@ program
 	.option('-sN, --synchSerialName <synchSerialName>', 'Serial name for Sync channel', "/dev/ttyAMA0")
 	.option('-sN, --synchSerialName <synchSerialName>', 'Serial name for Sync channel', "/dev/ttyAMA0")
 	.option('-sB, --synchBaudrate <synchBaudrate>', 'Serial baudrate for Sync channel', 115200)
+	.option('-sI, --synchInterval <synchInterval>', 'Ping interval for Sync process', 1000)
 	
 	.option('-gN, --gCodeSerialName <gCodeSerialName>', 'Serial name for GCODE channel', "/dev/ttyACM0")
 	.option('-gB, --gCodeBaudrate <gCodeBaudrate>', 'Serial baudrate for GCODE channel', 115200)
+	.option('-gt, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
+	.option('-gi, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/GCODE/Eraser.nc")
 	
-	.option('-i, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/GCODE/Eraser.nc")
-	.option('-t, --gCodeTimeout <gCodeTimeout>', 'Timeout to process each GCODE line', 30000)
 
 	.description('run for perpetuity in sync with another machine')
-	.action(({synchDisabled, synchSerialName, synchBaudrate, gCodeSerialName, gCodeBaudrate, gCodeFileInput, gCodeTimeout, ...options}) => {
+	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFileInput, gCodeTimeout, ...options}) => {
+		const verbose = options.parent.verbose;
 		const synchEnabled = !synchDisabled;
 		
-		synchBaudrate = parseInt(synchBaudrate);	
+		synchInterval = parseInt(synchInterval);
+		synchBaudrate = parseInt(synchBaudrate);
 		gCodeBaudrate = parseInt(gCodeBaudrate);
-		TIMEOUT_DELAY = parseInt(gCodeTimeout);
+		gCodeTimeout = parseInt(gCodeTimeout);
 
 		SerialPort.list()
 		.then(serialList => {
-			const verbose = options.parent.verbose;
 			const synchSerial = serialList.find(detail => detail.path.includes(synchSerialName));
 			const gCodeSerial = serialList.find(detail => detail.path.includes(gCodeSerialName));
 			const kill = (message, {gCodeHelper=false, syncHelper=false}) => {
@@ -71,6 +72,7 @@ program
 			const syncHelper = synchEnabled && new SyncHelper({
 				serialName : synchSerial.path, 
 				serialBaudrate : synchBaudrate, 
+				pingInterval : synchInterval,
 				verbose : verbose
 			});
 			
@@ -83,13 +85,14 @@ program
 				verbose : verbose
 			});
 
+			const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*1.5);
+			const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
+
 			if(verbose) console.log(`Loading GCodeFile : ${gCodeFileInput}`);
 			FSHelper.loadFileInArray(gCodeFileInput)
 			.then(GCodeData => {
 				if(verbose) console.log(`GCode : `, GCodeData);
-				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), syncHelper.PING_INTERVAL*1.5);
-				const timeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), TIMEOUT_DELAY);
-
+				
 				process.on('SIGINT', event => {
   					kill("kill requested", {gCodeHelper, syncHelper})
 				});
@@ -108,6 +111,8 @@ program
 					STATE_ID ++;
 					const action = () => {
 						const sendLine = () => {
+							clearTimeout(GCODE_TIMEOUT_HANDLER);
+							GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
 							const line = GCodeData.shift();
 							gCodeHelper.send(line);
 							GCodeData.push(line);
