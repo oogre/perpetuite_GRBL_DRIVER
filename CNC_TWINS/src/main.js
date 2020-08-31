@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-27 20:10:46
+  @Last Modified time: 2020-08-31 14:06:42
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -42,8 +42,8 @@ program
 	
 	.option('-gN, --gCodeSerialName <gCodeSerialName>', 'Serial name for GCODE channel', "/dev/ttyACM0")
 	.option('-gB, --gCodeBaudrate <gCodeBaudrate>', 'Serial baudrate for GCODE channel', 115200)
-	.option('-gt, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
-	.option('-gi, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/GCODE/Eraser.nc")
+	.option('-gT, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
+	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/GCODE/Eraser.nc")
 	
 
 	.description('run for perpetuity in sync with another machine')
