@@ -2,7 +2,7 @@
   GCODE - SyncHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:52:03
-  @Last Modified time: 2020-08-31 15:03:37
+  @Last Modified time: 2020-08-31 15:07:45
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -30,7 +30,6 @@ export default class SyncHelper{
 			if(this.verbose){
 				console.log(`>>`, data);
 			}
-			console.log(`PONG   : ${data.origin} != ${HOST_NAME}`);
 			if(data.origin!=HOST_NAME){
 				(this.eventHandlers[data.eventName]||[]).map(action => action(data));
 			}	

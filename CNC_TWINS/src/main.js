@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-31 15:00:03
+  @Last Modified time: 2020-08-31 15:07:54
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -149,15 +149,12 @@ program
 						});
 					})
 					.on("pong", event => {
-						console.log(`PONG ${event}`);
-						/*
-						if(event.stateID == STATE_ID){
+						if(event.data.stateID == STATE_ID){
 							console.log("triger ===> sync");
 							syncHelper.triger("sync", event);
 						}
 						clearTimeout(PING_TIMEOUT_HANDLER);
 						PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
-						*/
 					}).run();
 				}
 			});
