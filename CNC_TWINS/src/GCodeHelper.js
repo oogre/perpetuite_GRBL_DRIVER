@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-08-31 14:46:08
+  @Last Modified time: 2020-08-31 14:53:44
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -52,23 +52,19 @@ class GCodeHelperTool{
 			else if(line.match(/ALARM/gi))	GCodeHelperTool.setState("ALARM");
 			else if(line.match(/DOOR/gi))	GCodeHelperTool.setState("DOOR");
 			else 							GCodeHelperTool.setState("ERROR");
-			console.log(GCodeHelperTool.MACHINE);
 		}else if(line.match(/ERROR/gi)){
 			GCodeHelperTool.setState("ERROR");
-			console.log(GCodeHelperTool.MACHINE);
 		}else if(line.match(/ALARM/gi)){
 			GCodeHelperTool.setState("ALARM");
-			console.log(GCodeHelperTool.MACHINE);
 		}else if(line.match(/OK/gi)){
 			GCodeHelperTool.MACHINE.BUFFER_LEN--;
 			if(GCodeHelperTool.MACHINE.BUFFER_LEN == 0 ){
 				GCodeHelperTool.triger("emptyBuffer");
 			}
-			console.log(GCodeHelperTool.MACHINE);
 		}
 		if(verbose){
 			console.log(`>>`, line);
-			
+			console.log(GCodeHelperTool.MACHINE);
 		}
 	}
 	static send(data, verbose=false){
