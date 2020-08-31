@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-08-31 14:06:42
+  @Last Modified time: 2020-08-31 14:29:28
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -99,7 +99,8 @@ program
 
 				gCodeHelper.once(`ready`, event => {
 					STATE_ID ++;
-					const action = () => gCodeHelper.goHome();
+					//const action = () => gCodeHelper.goHome();
+					const action = () => gCodeHelper.getConfig();
 					synchEnabled ? syncHelper.once("sync", event => action()) : action();
 				})
 				.once("atHome", event => {
