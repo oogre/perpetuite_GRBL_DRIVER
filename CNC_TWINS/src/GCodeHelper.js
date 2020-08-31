@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-08-31 14:13:18
+  @Last Modified time: 2020-08-31 14:21:45
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -32,13 +32,15 @@ class GCodeHelperTool{
 		event.name = eventName;
 		(GCodeHelperTool.eventHandlers[eventName]||[]).map(fnc=>fnc(event));
 	}
+	static runStatusGrabber(interval=GCodeHelperTool.STATUS_INTERVAL){
+		clearInterval(GCodeHelperTool.STATUS_HANDLER);
+		if(interval != 0){
+			GCodeHelperTool.STATUS_HANDLER = setInterval(() => GCodeHelperTool.send("?"), interval);	
+		}
+	}
 	static receive(line, verbose=false){
 		if(line.includes("Grbl")){
-			setInterval(() => {
-				if(!GCodeHelperTool.isHoming()){
-					GCodeHelperTool.send("?")	
-				}
-			}, GCodeHelperTool.STATUS_INTERVAL);
+			runStatusGrabber();
 		}
 		else if(line.match(/(<(IDLE|HOLD|RUN|HOMING|JOG|ALARM|DOOR),(MPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*)),(WPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*))>)/gi)){
 			[GCodeHelperTool.MACHINE.POS.x, GCodeHelperTool.MACHINE.POS.y] = line.match(/([-+]?\d*\.?\d*)/ig).filter(a => a.length>0);
@@ -82,6 +84,7 @@ class GCodeHelperTool{
 GCodeHelperTool.serialPort;
 GCodeHelperTool.eventHandlers = {};
 GCodeHelperTool.STATUS_INTERVAL = 200;
+GCodeHelperTool.STATUS_HANDLER;
 GCodeHelperTool.MACHINE = {
 	STATE : undefined,
 	POS : {x : 0, y : 0},
@@ -138,11 +141,12 @@ export default class GCodeHelper{
 	}
 	goHome(){
 		this.send("$H");
-		console.log("GO HOME");
-		//GCodeHelperTool.setState("HOMING");
-		//GCodeHelperTool.once(`IDLE`, event => {
-		//	GCodeHelperTool.triger("atHome");
-		//});
+		GCodeHelperTool.setState("HOMING");
+		GCodeHelperTool.runStatusGrabber(GCodeHelperTool.STATUS_INTERVAL * 10);
+		GCodeHelperTool.once(`IDLE`, event => {
+			GCodeHelperTool.runStatusGrabber();
+			GCodeHelperTool.triger("atHome");
+		});
 		return this;
 	}
 	isRunning(){
