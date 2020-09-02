@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-02 14:40:19
+  @Last Modified time: 2020-09-02 14:42:51
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -50,7 +50,7 @@ program
 	
 	.description('run for perpetuity in sync with another machine')
 	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, ...options}) => {
-		console.log(process.title);
+		
 		synchInterval = parseInt(synchInterval);
 		synchBaudrate = parseInt(synchBaudrate);
 		gCodeBaudrate = parseInt(gCodeBaudrate);
@@ -120,9 +120,10 @@ program
 				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*1.5);
 				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
 				
-				//process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper}));
-				process.on('exit', event => kill("kill requested", {gCodeHelper, syncHelper}));
-
+				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper}));
+				process.on('exit', 	event => kill("kill requested", {gCodeHelper, syncHelper}));
+				process.on('SIGUSR1', event => kill("kill requested", {gCodeHelper, syncHelper}));
+				process.on('SIGUSR2', event => kill("kill requested", {gCodeHelper, syncHelper}));
 				gCodeHelper
 				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper}))
 				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper}))
