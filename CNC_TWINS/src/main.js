@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-02 13:58:04
+  @Last Modified time: 2020-09-02 14:01:05
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -76,19 +76,6 @@ program
 			syncHelper && syncHelper.send("!");
 			setTimeout(process.exit, 500);
 		}
-		const sendLine = (GCodeData) => {
-			clearTimeout(GCODE_TIMEOUT_HANDLER);
-			GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
-			let line = GCodeData.shift();
-			if(line.includes(gCodeFeedRateToken)){
-				line = line.replace(gCodeFeedRateToken, `F${getFeedRate()}`);
-			}
-			gCodeHelper.send(line);
-			GCodeData.push(line);
-		}
-		const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*1.5);
-		const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
-		
 		SerialPort.list()
 		.then(serialList => {
 			const synchSerial = serialList.find(detail => detail.path.includes(synchSerialName));
@@ -117,6 +104,19 @@ program
 			.then(GCodeData => {
 				if(verbose) console.log(`GCode : `, GCodeData);
 				
+				const sendLine = () => {
+					clearTimeout(GCODE_TIMEOUT_HANDLER);
+					GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
+					let line = GCodeData.shift();
+					if(line.includes(gCodeFeedRateToken)){
+						line = line.replace(gCodeFeedRateToken, `F${getFeedRate()}`);
+					}
+					gCodeHelper.send(line);
+					GCodeData.push(line);
+				}
+				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*1.5);
+				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
+				
 				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper}));
 
 				gCodeHelper
@@ -135,10 +135,10 @@ program
 				.once("atStartPoint", event => {
 					STATE_ID ++;
 					const action = () => {
-						sendLine(GCodeData);
+						sendLine();
 						gCodeHelper.on("emptyBuffer", event => {
 							if(gCodeHelper.isRunning()){
-								sendLine(GCodeData);
+								sendLine();
 							}
 						});
 					}
