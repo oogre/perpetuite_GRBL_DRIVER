@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-02 13:49:04
+  @Last Modified time: 2020-09-02 13:53:05
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -104,16 +104,7 @@ program
 					syncHelper && syncHelper.send("!");
 					setTimeout(process.exit, 500);
 				}
-				const sendLine = () => {
-					clearTimeout(GCODE_TIMEOUT_HANDLER);
-					GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
-					const line = GCodeData.shift();
-					if(line.includes(gCodeFeedRateToken)){
-						line = line.replace(gCodeFeedRateToken, `F${getFeedRate()}`);
-					}
-					gCodeHelper.send(line);
-					GCodeData.push(line);
-				}
+				
 				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*1.5);
 				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
 				
@@ -135,6 +126,16 @@ program
 				.once("atStartPoint", event => {
 					STATE_ID ++;
 					const action = () => {
+						const sendLine = () => {
+							clearTimeout(GCODE_TIMEOUT_HANDLER);
+							GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
+							const line = GCodeData.shift();
+							if(line.includes(gCodeFeedRateToken)){
+								line = line.replace(gCodeFeedRateToken, `F${getFeedRate()}`);
+							}
+							gCodeHelper.send(line);
+							GCodeData.push(line);
+						}
 						sendLine();
 						gCodeHelper.on("emptyBuffer", event => {
 							if(gCodeHelper.isRunning()){
