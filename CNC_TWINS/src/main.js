@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-02 14:04:08
+  @Last Modified time: 2020-09-02 14:31:56
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -17,6 +17,8 @@ import GCodeHelper from './GCodeHelper.js';
 import FSHelper from './FSHelper.js';
 import SerialPort from "serialport";
 import SimplexNoise from 'simplex-noise';
+
+process.title = "CNC_TWINS";
 
 program
 	.option('-v, --verbose', 'verbose');
@@ -40,7 +42,7 @@ program
 	.option('-gN, --gCodeSerialName <gCodeSerialName>', 'Serial name for GCODE channel', "/dev/ttyACM0")
 	.option('-gB, --gCodeBaudrate <gCodeBaudrate>', 'Serial baudrate for GCODE channel', 115200)
 	.option('-gFt, --gCodeFeedRateToken <gCodeFeedRateToken>', 'FeedRate TOKEN', "F3000")
-	.option('-gFm, --gCodeFeedRateMin <gCodeFeedRateMin>', 'Minimum FeedRate of the machine', 3000)
+	.option('-gFM, --gCodeFeedRateMin <gCodeFeedRateMin>', 'Minimum FeedRate of the machine', 3000)
 	.option('-gFM, --gCodeFeedRateMax <gCodeFeedRateMax>', 'Maximum FeedRate of the machine', 3000)
 	.option('-gFv, --gCodeFeedRateVariation <gCodeFeedRateVariation>', 'FeedRate variation of the machine', 0.05)
 	.option('-gT, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
@@ -48,6 +50,7 @@ program
 	
 	.description('run for perpetuity in sync with another machine')
 	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, ...options}) => {
+		console.log(process.title);
 		synchInterval = parseInt(synchInterval);
 		synchBaudrate = parseInt(synchBaudrate);
 		gCodeBaudrate = parseInt(gCodeBaudrate);

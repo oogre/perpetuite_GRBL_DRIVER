@@ -2,7 +2,7 @@
   Perpetuite - FSHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-07 17:59:35
-  @Last Modified time: 2020-08-31 17:22:54
+  @Last Modified time: 2020-09-02 14:32:33
 \*----------------------------------------*/
 const fs = require('fs');
 
