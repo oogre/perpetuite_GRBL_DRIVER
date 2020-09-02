@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-02 14:42:51
+  @Last Modified time: 2020-09-02 14:45:08
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -124,6 +124,9 @@ program
 				process.on('exit', 	event => kill("kill requested", {gCodeHelper, syncHelper}));
 				process.on('SIGUSR1', event => kill("kill requested", {gCodeHelper, syncHelper}));
 				process.on('SIGUSR2', event => kill("kill requested", {gCodeHelper, syncHelper}));
+				process.on('uncaughtException', event => kill("kill requested", {gCodeHelper, syncHelper}));
+				process.on('SIGTERM', event => kill("kill requested", {gCodeHelper, syncHelper}));
+				
 				gCodeHelper
 				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper}))
 				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper}))
