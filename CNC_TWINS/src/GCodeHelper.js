@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-08-31 15:34:16
+  @Last Modified time: 2020-09-02 14:50:58
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -13,7 +13,6 @@ class GCodeHelperTool{
 		if(state != GCodeHelperTool.STATE){
 			GCodeHelperTool.MACHINE.STATE = state
 			GCodeHelperTool.triger(state);
-			console.log(GCodeHelperTool.MACHINE);
 		}
 	}
 	static on(eventName, fnc){
