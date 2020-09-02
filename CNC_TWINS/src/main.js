@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-02 11:56:35
+  @Last Modified time: 2020-09-02 13:49:04
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -70,24 +70,6 @@ program
 			const lerp = (a, b, t) => a + (b - a) * Math.min(Math.max(t, 0), 1);
 			return Math.round(lerp(gCodeFeedRateMin, gCodeFeedRateMax, noise(gCodeFeedRateVariation)));
 		}
-		const kill = (message, {gCodeHelper=false, syncHelper=false}) => {
-			console.log(message);
-			gCodeHelper && gCodeHelper.send("!");
-			syncHelper && syncHelper.send("!");
-			setTimeout(process.exit, 500);
-		}
-		const sendLine = () => {
-			clearTimeout(GCODE_TIMEOUT_HANDLER);
-			GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
-			const line = GCodeData.shift();
-			if(line.includes(gCodeFeedRateToken)){
-				line = line.replace(gCodeFeedRateToken, `F${getFeedRate()}`);
-			}
-			gCodeHelper.send(line);
-			GCodeData.push(line);
-		}
-		const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*1.5);
-		const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
 		
 		SerialPort.list()
 		.then(serialList => {
@@ -116,6 +98,24 @@ program
 			FSHelper.loadFileInArray(gCodeFileInput)
 			.then(GCodeData => {
 				if(verbose) console.log(`GCode : `, GCodeData);
+				const kill = (message, {gCodeHelper=false, syncHelper=false}) => {
+					console.log(message);
+					gCodeHelper && gCodeHelper.send("!");
+					syncHelper && syncHelper.send("!");
+					setTimeout(process.exit, 500);
+				}
+				const sendLine = () => {
+					clearTimeout(GCODE_TIMEOUT_HANDLER);
+					GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
+					const line = GCodeData.shift();
+					if(line.includes(gCodeFeedRateToken)){
+						line = line.replace(gCodeFeedRateToken, `F${getFeedRate()}`);
+					}
+					gCodeHelper.send(line);
+					GCodeData.push(line);
+				}
+				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*1.5);
+				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
 				
 				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper}));
 
