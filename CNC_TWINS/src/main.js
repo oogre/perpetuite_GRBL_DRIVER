@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-09 16:47:49
+  @Last Modified time: 2020-09-09 17:07:53
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -117,7 +117,7 @@ program
 					gCodeHelper.send(line);
 					GCodeData.push(line);
 				}
-				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*2);
+				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*3);
 				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
 				
 				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper}));
