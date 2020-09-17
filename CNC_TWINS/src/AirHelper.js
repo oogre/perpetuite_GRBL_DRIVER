@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-17 14:00:35
+  @Last Modified time: 2020-09-17 14:04:52
 \*----------------------------------------*/
 
 
@@ -18,9 +18,6 @@ export default class AirHelper{
 		this.wasInside = false;
 	}
 	update(position){
-		if(this.verbose){
-			console.log(`AirHelper`, position, this.roi);
-		}
 		this.wasInside = this.isInside;
 		if( position.x > this.roi.x1 && 
 			position.x < this.roi.x2 &&  
@@ -39,8 +36,14 @@ export default class AirHelper{
 		}
 		if(this.isInside){
 			this.onInside();
+			if(this.verbose){
+				console.log(`AirHelper : inside`);
+			}
 		}else{
 			this.onOutside();
+			if(this.verbose){
+				console.log(`AirHelper : outside`);
+			}
 		}
 	};
 	onEnter(){

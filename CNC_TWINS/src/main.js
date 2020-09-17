@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-17 13:59:06
+  @Last Modified time: 2020-09-17 14:04:47
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -21,8 +21,8 @@ import SimplexNoise from 'simplex-noise';
 
 const AIR_CONTROL_PIN = 7;
 const CUT_AIR_RADIUS = 4;
-const CENTER_X = 1028;
-const CENTER_Y = 498;
+const CENTER_X = -1071.739;
+const CENTER_Y = -588.283;
 
 process.title = "CNC_TWINS";
 
@@ -184,7 +184,7 @@ program
 				gCodeHelper
 				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper}))
 				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper}))
-				.on(`move`, event => {console.log("move : ", event);airHelper.update(event.machine.POS);})
+				.on(`move`, event => airHelper.update(event.machine.POS))
 				.once(`ready`, event => {
 					STATE_ID ++;
 					const action = () => gCodeHelper.goHome();
