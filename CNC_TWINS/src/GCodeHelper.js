@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-17 13:32:19
+  @Last Modified time: 2020-09-17 13:35:53
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -39,7 +39,8 @@ class GCodeHelperTool{
 		}
 	}
 	static receive(line, verbose=false){
-		GCodeHelperTool.OLD_MACHINE = {...GCodeHelperTool.MACHINE};
+		GCodeHelperTool.OLD_MACHINE.POS.x = GCodeHelperTool.MACHINE.POS.x;
+		GCodeHelperTool.OLD_MACHINE.POS.y = GCodeHelperTool.MACHINE.POS.y;
 		if(line.includes("Grbl")){
 			GCodeHelperTool.runStatusGrabber();
 		}
