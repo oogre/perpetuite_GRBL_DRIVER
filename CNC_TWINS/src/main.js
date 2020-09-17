@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-17 13:09:34
+  @Last Modified time: 2020-09-17 13:57:35
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -184,7 +184,7 @@ program
 				gCodeHelper
 				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper}))
 				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper}))
-				.on(`move`, ({POS}) => airHelper.update(POS))
+				.on(`move`, event => {console.log("move : ", event);airHelper.update(event.machine.POS);})
 				.once(`ready`, event => {
 					STATE_ID ++;
 					const action = () => gCodeHelper.goHome();
