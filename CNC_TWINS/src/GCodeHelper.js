@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-17 13:41:15
+  @Last Modified time: 2020-09-17 13:47:22
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -39,13 +39,15 @@ class GCodeHelperTool{
 		}
 	}
 	static receive(line, verbose=false){
-		GCodeHelperTool.OLD_MACHINE.POS.x = GCodeHelperTool.MACHINE.POS.x;
-		GCodeHelperTool.OLD_MACHINE.POS.y = GCodeHelperTool.MACHINE.POS.y;
 		if(line.includes("Grbl")){
 			GCodeHelperTool.runStatusGrabber();
 		}
 		else if(line.match(/(<(IDLE|HOLD|RUN|HOMING|JOG|ALARM|DOOR),(MPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*)),(WPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*))>)/gi)){	
-			[GCodeHelperTool.MACHINE.POS.x, GCodeHelperTool.MACHINE.POS.y] = line.match(/([-+]?\d*\.?\d*)/ig).filter(a => a.length>0);
+			const pos = line.match(/([-+]?\d*\.?\d*)/ig).filter(a => a.length>0);
+			GCodeHelperTool.OLD_POS.x = GCodeHelperTool.OLD_MACHINE.POS.x;
+			GCodeHelperTool.OLD_POS.y = GCodeHelperTool.OLD_MACHINE.POS.y;
+			GCodeHelperTool.MACHINE.POS.x = pos[0];
+			GCodeHelperTool.MACHINE.POS.y = pos[1];
 			if(line.match(/IDLE/gi))		GCodeHelperTool.setState("IDLE");
 			else if(line.match(/HOLD/gi))	GCodeHelperTool.setState("HOLD");
 			else if(line.match(/RUN/gi))	GCodeHelperTool.setState("RUN");
@@ -67,10 +69,10 @@ class GCodeHelperTool{
 		}
 		if(verbose){
 			//console.log(`>>`, line);
-			console.log(`GCodeHelper : `, GCodeHelperTool.OLD_MACHINE.pos, GCodeHelperTool.MACHINE.pos);
+			console.log(`GCodeHelper : `, GCodeHelperTool.OLD_POS, GCodeHelperTool.MACHINE.POS);
 		}
-		if( GCodeHelperTool.OLD_MACHINE.POS.x != GCodeHelperTool.MACHINE.POS.x || 
-			GCodeHelperTool.OLD_MACHINE.POS.y != GCodeHelperTool.MACHINE.POS.y
+		if( GCodeHelperTool.OLD_POS.x != GCodeHelperTool.MACHINE.POS.x || 
+			GCodeHelperTool.OLD_POS.y != GCodeHelperTool.MACHINE.POS.y
 		){
 
 			GCodeHelperTool.triger("move", GCodeHelperTool.MACHINE);
@@ -99,7 +101,7 @@ GCodeHelperTool.MACHINE = {
 	POS : { x : 0, y : 0 },
 	BUFFER_LEN : 0
 };
-GCodeHelperTool.OLD_MACHINE = {...GCodeHelperTool.MACHINE};
+GCodeHelperTool.OLD_POS = {x : 0, y : 0};
 
 export default class GCodeHelper{
 	constructor({serialName, serialBaudrate, verbose}){
