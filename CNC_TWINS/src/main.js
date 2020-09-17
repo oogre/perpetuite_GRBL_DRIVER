@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-09 17:07:53
+  @Last Modified time: 2020-09-17 12:44:49
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -14,9 +14,12 @@
 import { program } from 'commander';
 import SyncHelper from './SyncHelper.js';
 import GCodeHelper from './GCodeHelper.js';
+import AirHelper from './AirHelper.js';
 import FSHelper from './FSHelper.js';
 import SerialPort from "serialport";
 import SimplexNoise from 'simplex-noise';
+
+const AIR_CONTROL_PIN = 7;
 
 process.title = "CNC_TWINS";
 
@@ -29,6 +32,26 @@ program
 	.action(async ({...options}) => {
 		const serialList = await SerialPort.list();
 		console.log(serialList);
+	});
+program
+	.command('air')
+	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', AIR_CONTROL_PIN)
+	.description('test For Air Helper')
+	.action(async ({airPinControl, ...options}) => {
+		return new Promise(()=>{
+			airPinControl = parseInt(airPinControl);
+			const verbose = options.parent.verbose;
+			const airHelper = new AirHelper({
+				verbose : verbose,
+				outputPin : airPinControl
+			});	
+			let flag = true;
+			setInterval(()=>{
+				if(flag)airHelper.enable();	
+				else airHelper.disable();
+				flag = !flag;
+			}, 1000);
+		});
 	});
 
 program
@@ -48,19 +71,35 @@ program
 	.option('-gT, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
 	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/GCODE/Eraser.nc")
 	
+	.option('-aD, --airDisabled <airDisabled>', 'Disabling air control', false)
+	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', AIR_CONTROL_PIN)
+	.option('-aROIx1, --airRegionOfInterestX1 <airRegionOfInterestX1>', 'Start Region of interest x', 0)
+	.option('-aROIy1, --airRegionOfInterestY1 <airRegionOfInterestY1>', 'Start Region of interest y', 0)
+	.option('-aROIx2, --airRegionOfInterestX2 <airRegionOfInterestX2>', 'Stop Region of interest x', 100)
+	.option('-aROIy2, --airRegionOfInterestY2 <airRegionOfInterestY2>', 'Stop Region of interest y', 100)
+	
 	.description('run for perpetuity in sync with another machine')
-	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, ...options}) => {
+	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX1, airRegionOfInterestY1, airRegionOfInterestX2, airRegionOfInterestY2, ...options}) => {
 		
 		synchInterval = parseInt(synchInterval);
 		synchBaudrate = parseInt(synchBaudrate);
+
 		gCodeBaudrate = parseInt(gCodeBaudrate);
 		gCodeTimeout  = parseInt(gCodeTimeout);
 		gCodeFeedRateMin = parseInt(gCodeFeedRateMin);
 		gCodeFeedRateMax = parseInt(gCodeFeedRateMax);
 		gCodeFeedRateVariation = parseFloat(gCodeFeedRateVariation);
+		
+		airPinControl = parseInt(airPinControl);
+		airRegionOfInterestX1 = parseInt(airRegionOfInterestX1);
+		airRegionOfInterestY1 = parseInt(airRegionOfInterestY1);
+		airRegionOfInterestX2 = parseInt(airRegionOfInterestX2);
+		airRegionOfInterestY2 = parseInt(airRegionOfInterestY2);
 
 		const verbose = options.parent.verbose;
 		const synchEnabled = !synchDisabled;
+		const airEnabled = !airDisabled;
+		
 		let GCODE_TIMEOUT_HANDLER;
 		let PING_TIMEOUT_HANDLER;
 		let STATE_ID = 0 ; 
@@ -102,6 +141,17 @@ program
 				verbose : verbose
 			});
 
+			const airHelper = new AirHelper({
+				verbose : verbose,
+				regionOfInterest : {
+					x1 : airRegionOfInterestX1,
+					y1 : airRegionOfInterestY1,
+					x2 : airRegionOfInterestX2,
+					y2 : airRegionOfInterestY2
+				}, 
+				outputPin : airPinControl
+			});
+
 			if(verbose) console.log(`Loading GCodeFile : ${gCodeFileInput}`);
 			FSHelper.loadFileInArray(gCodeFileInput)
 			.then(GCodeData => {
@@ -130,6 +180,7 @@ program
 				gCodeHelper
 				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper}))
 				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper}))
+				.on(`move`, ({POS}) => airHelper.update(POS))
 				.once(`ready`, event => {
 					STATE_ID ++;
 					const action = () => gCodeHelper.goHome();

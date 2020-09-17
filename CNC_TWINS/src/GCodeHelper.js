@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-02 14:50:58
+  @Last Modified time: 2020-09-15 08:24:43
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -39,10 +39,11 @@ class GCodeHelperTool{
 		}
 	}
 	static receive(line, verbose=false){
+		GCodeHelperTool.OLD_MACHINE = GCodeHelperTool.MACHINE;
 		if(line.includes("Grbl")){
 			GCodeHelperTool.runStatusGrabber();
 		}
-		else if(line.match(/(<(IDLE|HOLD|RUN|HOMING|JOG|ALARM|DOOR),(MPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*)),(WPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*))>)/gi)){
+		else if(line.match(/(<(IDLE|HOLD|RUN|HOMING|JOG|ALARM|DOOR),(MPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*)),(WPos\:([-+]?\d*\.?\d*),([-+]?\d*\.?\d*),([-+]?\d*\.?\d*))>)/gi)){	
 			[GCodeHelperTool.MACHINE.POS.x, GCodeHelperTool.MACHINE.POS.y] = line.match(/([-+]?\d*\.?\d*)/ig).filter(a => a.length>0);
 			if(line.match(/IDLE/gi))		GCodeHelperTool.setState("IDLE");
 			else if(line.match(/HOLD/gi))	GCodeHelperTool.setState("HOLD");
@@ -67,6 +68,11 @@ class GCodeHelperTool{
 			console.log(`>>`, line);
 			console.log(GCodeHelperTool.MACHINE);
 		}
+		if( GCodeHelperTool.OLD_MACHINE.POS.x != GCodeHelperTool.MACHINE.POS.x || 
+			GCodeHelperTool.OLD_MACHINE.POS.y != GCodeHelperTool.MACHINE.POS.y
+		){
+			GCodeHelperTool.triger("move", GCodeHelperTool.MACHINE);
+		}
 	}
 	static send(data, verbose=false){
 		if(verbose){
@@ -88,9 +94,10 @@ GCodeHelperTool.STATUS_INTERVAL = 500;
 GCodeHelperTool.STATUS_HANDLER;
 GCodeHelperTool.MACHINE = {
 	STATE : undefined,
-	POS : {x : 0, y : 0},
+	POS : { x : 0, y : 0 },
 	BUFFER_LEN : 0
 };
+GCodeHelperTool.OLD_MACHINE = GCodeHelperTool.MACHINE;
 
 export default class GCodeHelper{
 	constructor({serialName, serialBaudrate, verbose}){
@@ -168,5 +175,8 @@ export default class GCodeHelper{
 	}
 	getMachineInfo(){
 		return GCodeHelperTool.MACHINE;
+	}
+	getMachinePos(){
+		return GCodeHelperTool.MACHINE.POS;
 	}
 }
