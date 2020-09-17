@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-17 12:39:45
+  @Last Modified time: 2020-09-17 13:03:42
 \*----------------------------------------*/
 
 
@@ -47,10 +47,10 @@ export default class AirHelper{
 
 	}
 	onInside(){
-		this.enable();	
+		this.disable();	
 	}
 	onOutside(){
-		this.disable();
+		this.enable();
 	}
 	enable(){
 		rpio.write(this.outputPin, rpio.HIGH);

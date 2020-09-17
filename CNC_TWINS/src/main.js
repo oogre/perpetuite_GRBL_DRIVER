@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-17 12:44:49
+  @Last Modified time: 2020-09-17 13:09:34
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -20,6 +20,9 @@ import SerialPort from "serialport";
 import SimplexNoise from 'simplex-noise';
 
 const AIR_CONTROL_PIN = 7;
+const CUT_AIR_RADIUS = 4;
+const CENTER_X = 1028;
+const CENTER_Y = 498;
 
 process.title = "CNC_TWINS";
 
@@ -33,6 +36,7 @@ program
 		const serialList = await SerialPort.list();
 		console.log(serialList);
 	});
+
 program
 	.command('air')
 	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', AIR_CONTROL_PIN)
@@ -73,10 +77,10 @@ program
 	
 	.option('-aD, --airDisabled <airDisabled>', 'Disabling air control', false)
 	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', AIR_CONTROL_PIN)
-	.option('-aROIx1, --airRegionOfInterestX1 <airRegionOfInterestX1>', 'Start Region of interest x', 0)
-	.option('-aROIy1, --airRegionOfInterestY1 <airRegionOfInterestY1>', 'Start Region of interest y', 0)
-	.option('-aROIx2, --airRegionOfInterestX2 <airRegionOfInterestX2>', 'Stop Region of interest x', 100)
-	.option('-aROIy2, --airRegionOfInterestY2 <airRegionOfInterestY2>', 'Stop Region of interest y', 100)
+	.option('-aROIx1, --airRegionOfInterestX1 <airRegionOfInterestX1>', 'Start Region of interest x', CENTER_X - CUT_AIR_RADIUS) 
+	.option('-aROIy1, --airRegionOfInterestY1 <airRegionOfInterestY1>', 'Start Region of interest y', CENTER_Y - CUT_AIR_RADIUS)
+	.option('-aROIx2, --airRegionOfInterestX2 <airRegionOfInterestX2>', 'Stop Region of interest x',  CENTER_X + CUT_AIR_RADIUS)
+	.option('-aROIy2, --airRegionOfInterestY2 <airRegionOfInterestY2>', 'Stop Region of interest y',  CENTER_Y + CUT_AIR_RADIUS)
 	
 	.description('run for perpetuity in sync with another machine')
 	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX1, airRegionOfInterestY1, airRegionOfInterestX2, airRegionOfInterestY2, ...options}) => {
