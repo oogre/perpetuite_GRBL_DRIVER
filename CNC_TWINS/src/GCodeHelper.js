@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-17 13:35:53
+  @Last Modified time: 2020-09-17 13:41:15
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -67,7 +67,7 @@ class GCodeHelperTool{
 		}
 		if(verbose){
 			//console.log(`>>`, line);
-			console.log(`GCodeHelper : `, GCodeHelperTool.OLD_MACHINE, GCodeHelperTool.MACHINE);
+			console.log(`GCodeHelper : `, GCodeHelperTool.OLD_MACHINE.pos, GCodeHelperTool.MACHINE.pos);
 		}
 		if( GCodeHelperTool.OLD_MACHINE.POS.x != GCodeHelperTool.MACHINE.POS.x || 
 			GCodeHelperTool.OLD_MACHINE.POS.y != GCodeHelperTool.MACHINE.POS.y
@@ -99,7 +99,7 @@ GCodeHelperTool.MACHINE = {
 	POS : { x : 0, y : 0 },
 	BUFFER_LEN : 0
 };
-GCodeHelperTool.OLD_MACHINE = GCodeHelperTool.MACHINE;
+GCodeHelperTool.OLD_MACHINE = {...GCodeHelperTool.MACHINE};
 
 export default class GCodeHelper{
 	constructor({serialName, serialBaudrate, verbose}){
