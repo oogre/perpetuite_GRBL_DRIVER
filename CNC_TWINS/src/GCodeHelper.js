@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-17 13:48:40
+  @Last Modified time: 2020-09-17 13:51:16
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -46,8 +46,8 @@ class GCodeHelperTool{
 			const pos = line.match(/([-+]?\d*\.?\d*)/ig).filter(a => a.length>0);
 			GCodeHelperTool.OLD_POS.x = GCodeHelperTool.MACHINE.POS.x;
 			GCodeHelperTool.OLD_POS.y = GCodeHelperTool.MACHINE.POS.y;
-			GCodeHelperTool.MACHINE.POS.x = pos[0];
-			GCodeHelperTool.MACHINE.POS.y = pos[1];
+			GCodeHelperTool.MACHINE.POS.x = parseFloat(pos[0]);
+			GCodeHelperTool.MACHINE.POS.y = parseFloat(pos[1]);
 			if(line.match(/IDLE/gi))		GCodeHelperTool.setState("IDLE");
 			else if(line.match(/HOLD/gi))	GCodeHelperTool.setState("HOLD");
 			else if(line.match(/RUN/gi))	GCodeHelperTool.setState("RUN");

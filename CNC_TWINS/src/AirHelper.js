@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-17 13:19:52
+  @Last Modified time: 2020-09-17 13:50:49
 \*----------------------------------------*/
 
 
@@ -18,7 +18,7 @@ export default class AirHelper{
 		this.wasInside = false;
 	}
 	update(position){
-		if(verbose){
+		if(this.verbose){
 			console.log(`AirHelper ${position}`, this.roi);
 		}
 		this.wasInside = this.isInside;
