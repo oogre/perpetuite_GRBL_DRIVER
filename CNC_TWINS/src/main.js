@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 15:07:58
+  @Last Modified time: 2020-09-22 15:10:21
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -25,7 +25,7 @@ const ROTARY_DT_PIN = 2;
 const ROTARY_SWITCH_PIN = 3;  // Optional switch
 
 const AIR_CONTROL_PIN = 7;
-const CUT_AIR_RADIUS = 10;
+const CUT_AIR_RADIUS = 30;
 const CENTER_X = -1069.056;//-1077;//-1071.739;
 const CENTER_Y = -612.939;//-588.283;
 
