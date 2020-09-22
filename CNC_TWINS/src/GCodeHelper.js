@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-22 11:15:34
+  @Last Modified time: 2020-09-22 11:52:23
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -18,6 +18,9 @@ class GCodeHelperTool{
 	static on(eventName, fnc){
 		GCodeHelperTool.eventHandlers[eventName] = GCodeHelperTool.eventHandlers[eventName] || [];
 		GCodeHelperTool.eventHandlers[eventName].push(fnc);
+	}
+	static off(eventName){
+		GCodeHelperTool.eventHandlers[eventName] = [];
 	}
 	static once(eventName, fnc){
 		GCodeHelperTool.eventHandlers[eventName] = GCodeHelperTool.eventHandlers[eventName] || [];
@@ -134,6 +137,9 @@ export default class GCodeHelper{
 			GCodeHelperTool.triger("ready");
 		});
 		this.run = () => console.log("Run can be launched only once");
+	}
+	off(eventName){
+		GCodeHelperTool.off(eventName);
 	}
 	on(eventName, fnc){
 		GCodeHelperTool.on(eventName, fnc)
