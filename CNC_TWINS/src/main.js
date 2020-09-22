@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 11:53:08
+  @Last Modified time: 2020-09-22 11:58:15
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -122,9 +122,8 @@ program
 		}
 		const kill = (message, {gCodeHelper=false, syncHelper=false, airHelper=false}) => {
 			console.log(message);
-			gCodeHelper && gCodeHelper.send("!");
-			gCodeHelper && gCodeHelper.off("move");
-			syncHelper && syncHelper.send("!");
+			gCodeHelper && gCodeHelper.send("!").off();
+			syncHelper && syncHelper.send("!").off();
 			airHelper && airHelper.disable();
 			setTimeout(process.exit, 500);
 		}
