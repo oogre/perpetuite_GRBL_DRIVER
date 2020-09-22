@@ -1,0 +1,23 @@
+#!/bin/sh
+#/etc/init.d/runCNCtwins
+export PATH=$PATH:/usr/bin;
+
+LOG_FILE=/var/log/CNC_TWINS.log;
+
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+exec 1>${LOG_FILE} 2>&1
+
+case "$1" in
+start)
+cncTwins run -sN /dev/ttyS0 -gI /home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/Eraser.nc &  #scriptarguments
+;;
+stop)
+killall CNC_TWINS
+;;
+*)
+echo "Usage: /etc/init.d/runCNCtwins {start|stop}"
+exit 1
+;;
+esac
+exit 0
