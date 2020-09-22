@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-17 14:04:22
+  @Last Modified time: 2020-09-22 11:06:45
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -48,6 +48,12 @@ class GCodeHelperTool{
 			GCodeHelperTool.OLD_POS.y = GCodeHelperTool.MACHINE.POS.y;
 			GCodeHelperTool.MACHINE.POS.x = parseFloat(pos[0]);
 			GCodeHelperTool.MACHINE.POS.y = parseFloat(pos[1]);
+			if(GCodeHelperTool.MACHINE.POS.x != 0 && GCodeHelperTool.MACHINE.POS.Y != 0){
+				GCodeHelperTool.MIN_POS.x = Math.min(GCodeHelperTool.MIN_POS.x, GCodeHelperTool.MACHINE.POS.x);
+				GCodeHelperTool.MIN_POS.y = Math.min(GCodeHelperTool.MIN_POS.y, GCodeHelperTool.MACHINE.POS.y);
+				GCodeHelperTool.MAX_POS.x = Math.max(GCodeHelperTool.MAX_POS.x, GCodeHelperTool.MACHINE.POS.x);
+				GCodeHelperTool.MAX_POS.y = Math.max(GCodeHelperTool.MAX_POS.y, GCodeHelperTool.MACHINE.POS.y);
+			}
 			if(line.match(/IDLE/gi))		GCodeHelperTool.setState("IDLE");
 			else if(line.match(/HOLD/gi))	GCodeHelperTool.setState("HOLD");
 			else if(line.match(/RUN/gi))	GCodeHelperTool.setState("RUN");
@@ -68,12 +74,12 @@ class GCodeHelperTool{
 			}
 		}
 		if(verbose){
-			console.log(`>>`, line);
+			//console.log(`>>`, line);
+			console.log(`CENTER : ${(GCodeHelperTool.MIN_POS.x + GCodeHelperTool.MAX_POS.x)/2}, ${(GCodeHelperTool.MIN_POS.y + GCodeHelperTool.MAX_POS.y)/2}`);
 		}
 		if( GCodeHelperTool.OLD_POS.x != GCodeHelperTool.MACHINE.POS.x || 
 			GCodeHelperTool.OLD_POS.y != GCodeHelperTool.MACHINE.POS.y
 		){
-
 			GCodeHelperTool.triger("move");
 		}
 	}
@@ -101,6 +107,8 @@ GCodeHelperTool.MACHINE = {
 	BUFFER_LEN : 0
 };
 GCodeHelperTool.OLD_POS = {x : 0, y : 0};
+GCodeHelperTool.MIN_POS = {x : Math.Infinity, y : Math.Infinity};
+GCodeHelperTool.MAX_POS = {x : 0, y : 0};
 
 export default class GCodeHelper{
 	constructor({serialName, serialBaudrate, verbose}){
