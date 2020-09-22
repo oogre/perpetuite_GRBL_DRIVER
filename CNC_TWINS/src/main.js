@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 13:54:49
+  @Last Modified time: 2020-09-22 14:32:09
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -18,6 +18,11 @@ import AirHelper from './AirHelper.js';
 import FSHelper from './FSHelper.js';
 import SerialPort from "serialport";
 import SimplexNoise from 'simplex-noise';
+import Rotary from 'raspberrypi-rotary-encoder';
+
+const ROTARY_CK_PIN = 0;
+const ROTARY_DT_PIN = 2;
+const ROTARY_SWITCH_PIN = 3;  // Optional switch
 
 const AIR_CONTROL_PIN = 7;
 const CUT_AIR_RADIUS = 60;
@@ -157,6 +162,21 @@ program
 				}, 
 				outputPin : airPinControl
 			});
+			if(airHelper){
+				const rotary = new Rotary(ROTARY_CK_PIN, ROTARY_DT_PIN, ROTARY_SWITCH_PIN);
+				rotary.on("rotate", (delta) => {
+					console.log("Rotation :"+delta);
+					//CUT_AIR_RADIUS += delta;
+					//CENTER_X += delta;
+					//CENTER_Y += delta;
+				});
+				rotary.on("pressed", () => {
+					console.log("Rotary switch pressed");
+				});
+				rotary.on("released", () => {
+					console.log("Rotary switch released");
+				});
+			}
 
 			if(verbose) console.log(`Loading GCodeFile : ${gCodeFileInput}`);
 			FSHelper.loadFileInArray(gCodeFileInput)
