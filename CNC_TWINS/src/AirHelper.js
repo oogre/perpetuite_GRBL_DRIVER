@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-22 13:22:34
+  @Last Modified time: 2020-09-22 14:52:23
 \*----------------------------------------*/
 
 
@@ -21,7 +21,11 @@ export default class AirHelper{
 		this.wasInside = this.isInside;
 		const x = position.x-this.roi.x;
 		const y = position.y-this.roi.y;
-		if( x * x + y * y < this.roi.sqR ){
+		const dist = Math.sqrt(x * x + y * y);
+		if(this.verbose){
+			console.log(`Dist : ${dist} : (${x}, ${y}`);
+		}
+		if( dist < this.roi.sqR ){
 			this.isInside = true;
 		}else {
 			this.isInside = false;
