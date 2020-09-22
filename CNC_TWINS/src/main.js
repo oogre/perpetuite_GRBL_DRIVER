@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 15:59:09
+  @Last Modified time: 2020-09-22 16:07:08
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -31,9 +31,9 @@ config.CENTER_X 		= config.CENTER_X || -1069.056;
 config.CENTER_Y 		= config.CENTER_Y || -612.939;
 config.CUT_AIR_RADIUS 	= config.CUT_AIR_RADIUS || 30;
 config.AIR_CONTROL_PIN  = config.AIR_CONTROL_PIN || 7;
-config.ROTARY_CK_PIN	= config.ROTARY_CK_PIN || 0;
+config.ROTARY_CK_PIN	= config.ROTARY_CK_PIN || 3;
 config.ROTARY_DT_PIN	= config.ROTARY_DT_PIN || 2;
-config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 3;
+config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 0;
 FSHelper.saveJSONFile(config, configPath);
 
 program
@@ -164,7 +164,7 @@ program
 				outputPin : airPinControl
 			});
 			if(airHelper){
-				const rotary = new Rotary(ROTARY_CK_PIN, ROTARY_DT_PIN, ROTARY_SWITCH_PIN);
+				const rotary = new Rotary(config.ROTARY_CK_PIN, config.ROTARY_DT_PIN, config.ROTARY_SWITCH_PIN);
 				rotary.on("rotate", (delta) => {
 					console.log("Rotation :"+delta);
 					//CUT_AIR_RADIUS += delta;
