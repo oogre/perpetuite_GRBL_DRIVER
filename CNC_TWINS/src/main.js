@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 15:56:54
+  @Last Modified time: 2020-09-22 15:59:09
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -25,9 +25,6 @@ process.title = "CNC_TWINS";
 const libPath = __dirname;
 const configPath = `${libPath}/../conf/conf.json`;
 const gCODEPath = `${libPath}/../GCODE/${require('os').hostname()}.nc`;
-
-console.log(configPath);
-console.log(gCODEPath);
 
 let config = FSHelper.loadJSONFile(configPath);
 config.CENTER_X 		= config.CENTER_X || -1069.056;
@@ -52,7 +49,7 @@ program
 
 program
 	.command('air')
-	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', AIR_CONTROL_PIN)
+	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', config.AIR_CONTROL_PIN)
 	.description('test For Air Helper')
 	.action(async ({airPinControl, ...options}) => {
 		return new Promise(()=>{
@@ -86,7 +83,7 @@ program
 	.option('-gFM, --gCodeFeedRateMax <gCodeFeedRateMax>', 'Maximum FeedRate of the machine', 3000)
 	.option('-gFv, --gCodeFeedRateVariation <gCodeFeedRateVariation>', 'FeedRate variation of the machine', 0.05)
 	.option('-gT, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
-	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/perpetuite_GRBL_DRIVER/CNC_TWINS/GCODE/eraser.nc")
+	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', gCODEPath)
 	
 	.option('-aD, --airDisabled <airDisabled>', 'Disabling air control', false)
 	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', config.AIR_CONTROL_PIN)
