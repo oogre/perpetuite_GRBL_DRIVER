@@ -24,6 +24,6 @@
     "rpio": "^2.2.0",
     "serialport": "^9.0.0",
     "simplex-noise": "^2.4.0",
-    "raspberrypi-rotary-encoder" : "1.9.0"
+    "raspberrypi-rotary-encoder": "1.9.0"
   }
 }
