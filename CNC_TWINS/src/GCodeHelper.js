@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-22 11:09:39
+  @Last Modified time: 2020-09-22 11:11:09
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -111,8 +111,8 @@ GCodeHelperTool.MACHINE = {
 	BUFFER_LEN : 0
 };
 GCodeHelperTool.OLD_POS = {x : 0, y : 0};
-GCodeHelperTool.MIN_POS = {x : Math.Infinity, y : Math.Infinity};
-GCodeHelperTool.MAX_POS = {x : -Math.Infinity, y : -Math.Infinity};
+GCodeHelperTool.MIN_POS = {x : 10000, y : 10000};
+GCodeHelperTool.MAX_POS = {x : -10000, y : -10000};
 
 export default class GCodeHelper{
 	constructor({serialName, serialBaudrate, verbose}){
