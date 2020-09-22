@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 15:53:32
+  @Last Modified time: 2020-09-22 15:56:54
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -21,9 +21,14 @@ import SimplexNoise from 'simplex-noise';
 import Rotary from 'raspberrypi-rotary-encoder';
 
 process.title = "CNC_TWINS";
-console.log(__dirname);
-/*
-const configPath = "~/perpetuite_GRBL_DRIVER/CNC_TWINS/conf/conf.json";
+
+const libPath = __dirname;
+const configPath = `${libPath}/../conf/conf.json`;
+const gCODEPath = `${libPath}/../GCODE/${require('os').hostname()}.nc`;
+
+console.log(configPath);
+console.log(gCODEPath);
+
 let config = FSHelper.loadJSONFile(configPath);
 config.CENTER_X 		= config.CENTER_X || -1069.056;
 config.CENTER_Y 		= config.CENTER_Y || -612.939;
@@ -33,7 +38,7 @@ config.ROTARY_CK_PIN	= config.ROTARY_CK_PIN || 0;
 config.ROTARY_DT_PIN	= config.ROTARY_DT_PIN || 2;
 config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 3;
 FSHelper.saveJSONFile(config, configPath);
-*/
+
 program
 	.option('-v, --verbose', 'verbose');
 
