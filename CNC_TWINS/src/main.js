@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 13:15:14
+  @Last Modified time: 2020-09-22 13:54:49
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -21,8 +21,8 @@ import SimplexNoise from 'simplex-noise';
 
 const AIR_CONTROL_PIN = 7;
 const CUT_AIR_RADIUS = 60;
-const CENTER_X = -1079;//-1077;//-1071.739;
-const CENTER_Y = -600;//-588.283;
+const CENTER_X = -1076;//-1077;//-1071.739;
+const CENTER_Y = -602.7;//-588.283;
 
 //const CENTER_X = -1079.0255;//-1071.739;
 //const CENTER_Y = -598.4255;//-588.283;
