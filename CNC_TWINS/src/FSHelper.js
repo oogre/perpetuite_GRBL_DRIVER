@@ -2,7 +2,7 @@
   Perpetuite - FSHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-07 17:59:35
-  @Last Modified time: 2020-09-22 15:41:17
+  @Last Modified time: 2020-09-22 15:51:00
 \*----------------------------------------*/
 const fs = require('fs');
 
@@ -49,7 +49,7 @@ export default class FSHelper {
 		}
 	}
 	static saveJSONFile(data, path){
-		const rawdata = JSON.stringify(data);
+		const rawdata = JSON.stringify(data, null, 2);
 		fs.writeFileSync(path, rawdata);
 	}
 }
