@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 12:19:56
+  @Last Modified time: 2020-09-22 13:15:14
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -81,13 +81,12 @@ program
 	
 	.option('-aD, --airDisabled <airDisabled>', 'Disabling air control', false)
 	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', AIR_CONTROL_PIN)
-	.option('-aROIx1, --airRegionOfInterestX1 <airRegionOfInterestX1>', 'Start Region of interest x', CENTER_X - CUT_AIR_RADIUS) 
-	.option('-aROIy1, --airRegionOfInterestY1 <airRegionOfInterestY1>', 'Start Region of interest y', CENTER_Y - CUT_AIR_RADIUS)
-	.option('-aROIx2, --airRegionOfInterestX2 <airRegionOfInterestX2>', 'Stop Region of interest x',  CENTER_X + CUT_AIR_RADIUS)
-	.option('-aROIy2, --airRegionOfInterestY2 <airRegionOfInterestY2>', 'Stop Region of interest y',  CENTER_Y + CUT_AIR_RADIUS)
+	.option('-aROIx, --airRegionOfInterestX <airRegionOfInterestX>', 'CENTER Region of interest x', CENTER_X) 
+	.option('-aROIy, --airRegionOfInterestY <airRegionOfInterestY>', 'CENTER Region of interest y', CENTER_Y)
+	.option('-aROIr, --airRegionOfInterestR <airRegionOfInterestR>', 'Radius Region of interest',  CUT_AIR_RADIUS)
 	
 	.description('run for perpetuity in sync with another machine')
-	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX1, airRegionOfInterestY1, airRegionOfInterestX2, airRegionOfInterestY2, ...options}) => {
+	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX, airRegionOfInterestY, airRegionOfInterestR, ...options}) => {
 		
 		synchInterval = parseInt(synchInterval);
 		synchBaudrate = parseInt(synchBaudrate);
@@ -99,10 +98,9 @@ program
 		gCodeFeedRateVariation = parseFloat(gCodeFeedRateVariation);
 		
 		airPinControl = parseInt(airPinControl);
-		airRegionOfInterestX1 = parseInt(airRegionOfInterestX1);
-		airRegionOfInterestY1 = parseInt(airRegionOfInterestY1);
-		airRegionOfInterestX2 = parseInt(airRegionOfInterestX2);
-		airRegionOfInterestY2 = parseInt(airRegionOfInterestY2);
+		airRegionOfInterestX = parseFloat(airRegionOfInterestX);
+		airRegionOfInterestY = parseFloat(airRegionOfInterestY);
+		airRegionOfInterestR = parseFloat(airRegionOfInterestR);
 
 		const verbose = options.parent.verbose;
 		const synchEnabled = !synchDisabled;
@@ -153,10 +151,9 @@ program
 			const airHelper = airEnabled && new AirHelper({
 				verbose : verbose,
 				regionOfInterest : {
-					x1 : airRegionOfInterestX1,
-					y1 : airRegionOfInterestY1,
-					x2 : airRegionOfInterestX2,
-					y2 : airRegionOfInterestY2
+					x : airRegionOfInterestX,
+					y : airRegionOfInterestY,
+					r : airRegionOfInterestR
 				}, 
 				outputPin : airPinControl
 			});
