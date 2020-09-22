@@ -11,7 +11,10 @@ start)
 	cncTwins run -sN /dev/ttyS0 -gI /home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/$HOSTNAME.nc &  #scriptarguments
 ;;
 debug)
-	cncTwins -v run -sN /dev/ttyS0 -gI "/home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/$HOSTNAME.nc" &  #scriptarguments
+	echo $HOSTNAME
+	echo /home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/$HOSTNAME.nc
+	echo "/home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/$HOSTNAME.nc"
+	#cncTwins -v run -sN /dev/ttyS0 -gI /home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/$HOSTNAME.nc &  #scriptarguments
 ;;
 stop)
 	killall CNC_TWINS
