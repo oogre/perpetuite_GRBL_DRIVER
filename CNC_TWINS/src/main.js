@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 15:43:14
+  @Last Modified time: 2020-09-22 15:45:09
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -22,7 +22,7 @@ import Rotary from 'raspberrypi-rotary-encoder';
 
 process.title = "CNC_TWINS";
 
-const configPath = "~/Perpetuite/CNC_TWINS/conf/conf.json";
+const configPath = "~/perpetuite_GRBL_DRIVER/CNC_TWINS/conf/conf.json";
 let config = FSHelper.loadJSONFile(configPath);
 config.CENTER_X 		= config.CENTER_X || -1069.056;
 config.CENTER_Y 		= config.CENTER_Y || -612.939;
@@ -80,7 +80,7 @@ program
 	.option('-gFM, --gCodeFeedRateMax <gCodeFeedRateMax>', 'Maximum FeedRate of the machine', 3000)
 	.option('-gFv, --gCodeFeedRateVariation <gCodeFeedRateVariation>', 'FeedRate variation of the machine', 0.05)
 	.option('-gT, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
-	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/Perpetuite/CNC_TWINS/GCODE/eraser.nc")
+	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/perpetuite_GRBL_DRIVER/CNC_TWINS/GCODE/eraser.nc")
 	
 	.option('-aD, --airDisabled <airDisabled>', 'Disabling air control', false)
 	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', config.AIR_CONTROL_PIN)
