@@ -1,5 +1,6 @@
 #!/bin/sh
 #/etc/init.d/runCNCtwins
+### sym link >>> /etc/init.d/runCNCtwins
 export PATH=$PATH:/usr/bin;
 
 case "$1" in

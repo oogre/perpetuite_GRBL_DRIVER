@@ -2,7 +2,7 @@
   Perpetuite - FSHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-07 17:59:35
-  @Last Modified time: 2020-09-02 14:32:33
+  @Last Modified time: 2020-09-22 15:41:17
 \*----------------------------------------*/
 const fs = require('fs');
 
@@ -38,5 +38,18 @@ export default class FSHelper {
 		let array = [];
 		await FSHelperTools.readLines(input, data => array.push(data) );	
 		return array;
+	}
+	static loadJSONFile(path){
+		try{
+			const rawdata = fs.readFileSync(path);
+			const data = JSON.parse(rawdata);
+			return data;	
+		}catch(err){
+			return {}
+		}
+	}
+	static saveJSONFile(data, path){
+		const rawdata = JSON.stringify(data);
+		fs.writeFileSync(path, rawdata);
 	}
 }

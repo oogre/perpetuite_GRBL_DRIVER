@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 15:10:21
+  @Last Modified time: 2020-09-22 15:39:23
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -20,16 +20,18 @@ import SerialPort from "serialport";
 import SimplexNoise from 'simplex-noise';
 import Rotary from 'raspberrypi-rotary-encoder';
 
-const ROTARY_CK_PIN = 0;
-const ROTARY_DT_PIN = 2;
-const ROTARY_SWITCH_PIN = 3;  // Optional switch
-
-const AIR_CONTROL_PIN = 7;
-const CUT_AIR_RADIUS = 30;
-const CENTER_X = -1069.056;//-1077;//-1071.739;
-const CENTER_Y = -612.939;//-588.283;
-
 process.title = "CNC_TWINS";
+
+const configPath = "~/Perpetuite/CNC_TWINS/conf/conf.json";
+let config = FSHelper.loadJSONFile(configPath);
+config.CENTER_X 		= config.CENTER_X || -1069.056;
+config.CENTER_Y 		= config.CENTER_Y || -612.939;
+config.CUT_AIR_RADIUS 	= config.CUT_AIR_RADIUS || 30;
+config.AIR_CONTROL_PIN  = config.AIR_CONTROL_PIN || 7;
+config.ROTARY_CK_PIN	= config.ROTARY_CK_PIN || 0;
+config.ROTARY_DT_PIN	= config.ROTARY_DT_PIN || 2;
+config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 3;
+saveJSONFile(config, configPath);
 
 program
 	.option('-v, --verbose', 'verbose');
@@ -78,13 +80,13 @@ program
 	.option('-gFM, --gCodeFeedRateMax <gCodeFeedRateMax>', 'Maximum FeedRate of the machine', 3000)
 	.option('-gFv, --gCodeFeedRateVariation <gCodeFeedRateVariation>', 'FeedRate variation of the machine', 0.05)
 	.option('-gT, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
-	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/GCODE/Eraser.nc")
+	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', "~/Perpetuite/CNC_TWINS/GCODE/eraser.nc")
 	
 	.option('-aD, --airDisabled <airDisabled>', 'Disabling air control', false)
-	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', AIR_CONTROL_PIN)
-	.option('-aROIx, --airRegionOfInterestX <airRegionOfInterestX>', 'CENTER Region of interest x', CENTER_X) 
-	.option('-aROIy, --airRegionOfInterestY <airRegionOfInterestY>', 'CENTER Region of interest y', CENTER_Y)
-	.option('-aROIr, --airRegionOfInterestR <airRegionOfInterestR>', 'Radius Region of interest',  CUT_AIR_RADIUS)
+	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', config.AIR_CONTROL_PIN)
+	.option('-aROIx, --airRegionOfInterestX <airRegionOfInterestX>', 'CENTER Region of interest x', config.CENTER_X) 
+	.option('-aROIy, --airRegionOfInterestY <airRegionOfInterestY>', 'CENTER Region of interest y', config.CENTER_Y)
+	.option('-aROIr, --airRegionOfInterestR <airRegionOfInterestR>', 'Radius Region of interest',  config.CUT_AIR_RADIUS)
 	
 	.description('run for perpetuity in sync with another machine')
 	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX, airRegionOfInterestY, airRegionOfInterestR, ...options}) => {
