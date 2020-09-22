@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./node_modules/.bin/babel src --out-dir lib ;chmod u+x ./lib/main.js;",
+    "update": "git pull; ./node_modules/.bin/babel src --out-dir lib ;chmod u+x ./lib/main.js;",
     "run": "./node_modules/.bin/babel src --out-dir lib ; node lib/main.js; "
   },
   "author": "",
