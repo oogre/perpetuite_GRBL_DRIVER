@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 11:35:38
+  @Last Modified time: 2020-09-22 11:44:20
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -20,7 +20,7 @@ import SerialPort from "serialport";
 import SimplexNoise from 'simplex-noise';
 
 const AIR_CONTROL_PIN = 7;
-const CUT_AIR_RADIUS = 50;
+const CUT_AIR_RADIUS = 30;
 const CENTER_X = -1079;//-1077;//-1071.739;
 const CENTER_Y = -600;//-588.283;
 
