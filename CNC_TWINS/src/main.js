@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 11:44:20
+  @Last Modified time: 2020-09-22 11:48:00
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -120,10 +120,11 @@ program
 			const lerp = (a, b, t) => a + (b - a) * Math.min(Math.max(t, 0), 1);
 			return Math.round(lerp(gCodeFeedRateMin, gCodeFeedRateMax, noise(gCodeFeedRateVariation)));
 		}
-		const kill = (message, {gCodeHelper=false, syncHelper=false}) => {
+		const kill = (message, {gCodeHelper=false, syncHelper=false, airHelper=false}) => {
 			console.log(message);
 			gCodeHelper && gCodeHelper.send("!");
 			syncHelper && syncHelper.send("!");
+			airHelper && airHelper.disable();
 			setTimeout(process.exit, 500);
 		}
 		SerialPort.list()
@@ -149,7 +150,7 @@ program
 				verbose : verbose
 			});
 
-			const airHelper = new AirHelper({
+			const airHelper = airEnabled && new AirHelper({
 				verbose : verbose,
 				regionOfInterest : {
 					x1 : airRegionOfInterestX1,
@@ -175,19 +176,19 @@ program
 					gCodeHelper.send(line);
 					GCodeData.push(line);
 				}
-				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper}), synchInterval*3);
-				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper}), gCodeTimeout);
+				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper, airHelper}), synchInterval*3);
+				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper, airHelper}), gCodeTimeout);
 				
-				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper}));
-				process.on('exit', 	event => kill("kill requested", {gCodeHelper, syncHelper}));
-				process.on('SIGUSR1', event => kill("kill requested", {gCodeHelper, syncHelper}));
-				process.on('SIGUSR2', event => kill("kill requested", {gCodeHelper, syncHelper}));
-				process.on('uncaughtException', event => kill("kill requested", {gCodeHelper, syncHelper}));
-				process.on('SIGTERM', event => kill("kill requested", {gCodeHelper, syncHelper}));
+				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
+				process.on('exit', 	event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
+				process.on('SIGUSR1', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
+				process.on('SIGUSR2', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
+				process.on('uncaughtException', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
+				process.on('SIGTERM', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
 				
 				gCodeHelper
-				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper}))
-				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper}))
+				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper, airHelper}))
+				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper, airHelper}))
 				.on(`move`, event => airHelper.update(event.machine.POS))
 				.once(`ready`, event => {
 					STATE_ID ++;
@@ -216,7 +217,7 @@ program
 					gCodeHelper.run();
 				}else{
 					syncHelper
-					.on("!", () => kill("KILL ORDERED", {gCodeHelper}))
+					.on("!", () => kill("KILL ORDERED", {gCodeHelper, airHelper}))
 					.on("ready", () => gCodeHelper.run())
 					.on("ping", event => {
 						syncHelper.send("pong", {
