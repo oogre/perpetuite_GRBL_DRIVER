@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-22 14:52:46
+  @Last Modified time: 2020-09-22 14:58:30
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -87,6 +87,8 @@ class GCodeHelperTool{
 		if( GCodeHelperTool.OLD_POS.x != GCodeHelperTool.MACHINE.POS.x || 
 			GCodeHelperTool.OLD_POS.y != GCodeHelperTool.MACHINE.POS.y
 		){
+			GCodeHelperTool.OLD_POS.x = GCodeHelperTool.MACHINE.POS.x;
+			GCodeHelperTool.OLD_POS.y = GCodeHelperTool.MACHINE.POS.y;
 			GCodeHelperTool.triger("move");
 		}
 	}
