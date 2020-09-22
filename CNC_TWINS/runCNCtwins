@@ -10,7 +10,7 @@ exec 1>${LOG_FILE} 2>&1
 
 case "$1" in
 start)
-cncTwins run -sN /dev/ttyS0 -gI /home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/Eraser.nc &  #scriptarguments
+cncTwins run -sN /dev/ttyS0 -gI /home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/$HOSTNAME.nc &  #scriptarguments
 ;;
 stop)
 killall CNC_TWINS
