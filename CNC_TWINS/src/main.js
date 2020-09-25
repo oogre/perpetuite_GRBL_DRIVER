@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-25 09:42:41
+  @Last Modified time: 2020-09-25 09:57:09
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -76,6 +76,7 @@ program
 	.option('-sB, --synchBaudrate <synchBaudrate>', 'Serial baudrate for Sync channel', 115200)
 	.option('-sI, --synchInterval <synchInterval>', 'Ping interval for Sync process', 1000)
 	
+	.option('-gD, --gCodeDisabled <gCodeDisabled>', 'Disabling GCODE semding', false)
 	.option('-gN, --gCodeSerialName <gCodeSerialName>', 'Serial name for GCODE channel', "/dev/ttyACM0")
 	.option('-gB, --gCodeBaudrate <gCodeBaudrate>', 'Serial baudrate for GCODE channel', 115200)
 	.option('-gFt, --gCodeFeedRateToken <gCodeFeedRateToken>', 'FeedRate TOKEN', "F3000")
@@ -92,7 +93,7 @@ program
 	.option('-aROIr, --airRegionOfInterestR <airRegionOfInterestR>', 'Radius Region of interest',  config.CUT_AIR_RADIUS)
 	
 	.description('run for perpetuity in sync with another machine')
-	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX, airRegionOfInterestY, airRegionOfInterestR, ...options}) => {
+	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeDisabled, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX, airRegionOfInterestY, airRegionOfInterestR, ...options}) => {
 		
 		synchInterval = parseInt(synchInterval);
 		synchBaudrate = parseInt(synchBaudrate);
@@ -109,6 +110,7 @@ program
 		airRegionOfInterestR = parseFloat(airRegionOfInterestR);
 
 		const verbose = options.parent.verbose;
+		const gCodeEnabled = !gCodeDisabled;
 		const synchEnabled = !synchDisabled;
 		const airEnabled = !airDisabled;
 		
@@ -199,36 +201,36 @@ program
 				process.on('uncaughtException', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
 				process.on('SIGTERM', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
 				
-				gCodeHelper
-				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper, airHelper, rotaryHelper}))
-				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper, airHelper, rotaryHelper}))
-				.once(`ready`, event => {
-					STATE_ID ++;
-					const action = () => gCodeHelper.goHome();
-					synchEnabled ? syncHelper.once("sync", event => action()) : action();
-				})
-				.once("atHome", event => {
-					STATE_ID ++;
-					const action = () => gCodeHelper.goStartPosition(GCodeData.shift());
-					synchEnabled ? syncHelper.once("sync", event => action()) : action();
-				})
-				.once("atStartPoint", event => {
-					STATE_ID ++;
-					const action = () => {
-						gCodeHelper.on(`move`, event => airHelper.update(event.machine.POS));
-						sendLine();
-						gCodeHelper.on("emptyBuffer", event => {
-							if(gCodeHelper.isRunning()){
-								sendLine();
-							}
-						});
-					}
-					synchEnabled ? syncHelper.once("sync", event => action()) : action();
-				});
+				if(gCodeEnabled){
+					gCodeHelper
+					.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper, airHelper, rotaryHelper}))
+					.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper, airHelper, rotaryHelper}))
+					.once(`ready`, event => {
+						STATE_ID ++;
+						const action = () => gCodeHelper.goHome();
+						synchEnabled ? syncHelper.once("sync", event => action()) : action();
+					})
+					.once("atHome", event => {
+						STATE_ID ++;
+						const action = () => gCodeHelper.goStartPosition(GCodeData.shift());
+						synchEnabled ? syncHelper.once("sync", event => action()) : action();
+					})
+					.once("atStartPoint", event => {
+						STATE_ID ++;
+						const action = () => {
+							gCodeHelper.on(`move`, event => airHelper.update(event.machine.POS));
+							sendLine();
+							gCodeHelper.on("emptyBuffer", event => {
+								if(gCodeHelper.isRunning()){
+									sendLine();
+								}
+							});
+						}
+						synchEnabled ? syncHelper.once("sync", event => action()) : action();
+					});
+				}
 
-				if(!syncHelper){
-					gCodeHelper.run();
-				}else{
+				if(syncHelper){
 					syncHelper
 					.on("!", () => kill("KILL ORDERED", {gCodeHelper, airHelper, rotaryHelper}))
 					.on("ready", () => gCodeHelper.run())
@@ -245,6 +247,8 @@ program
 						clearTimeout(PING_TIMEOUT_HANDLER);
 						PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
 					}).run();
+				}else{
+					gCodeHelper.run();
 				}
 				
 				rotaryHelper.on('rotation', event => {
