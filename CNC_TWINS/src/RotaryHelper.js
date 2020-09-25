@@ -2,7 +2,7 @@
   BeatStepProMidi - RotaryHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-24 14:10:41
-  @Last Modified time: 2020-09-25 10:24:49
+  @Last Modified time: 2020-09-25 10:28:18
 \*----------------------------------------*/
 
 import rpio from "rpio";
@@ -11,9 +11,9 @@ export default class RotaryHelper{
 	constructor({verbose, rotary}){
 		this.verbose = verbose;
 		this.rotary = rotary;
-		rpio.open(rotary.clockPin, rpio.INPUT, rpio.PULL_DOWN);
-		rpio.open(rotary.dataPin, rpio.INPUT, rpio.PULL_DOWN);
-		rpio.open(rotary.switchPin, rpio.INPUT, rpio.PULL_DOWN);
+		rpio.open(rotary.clockPin, rpio.INPUT);
+		rpio.open(rotary.dataPin, rpio.INPUT);
+		rpio.open(rotary.switchPin, rpio.INPUT);
 
 
 
