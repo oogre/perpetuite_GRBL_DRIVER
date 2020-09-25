@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-25 10:53:45
+  @Last Modified time: 2020-09-25 11:23:37
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -65,6 +65,38 @@ program
 				else airHelper.disable();
 				flag = !flag;
 			}, 1000);
+		});
+	});
+
+program
+	.command('rotary')
+	.option('-rC, --rotaryClock <rotaryClock>', 'GPIO pin for rotary clock', config.ROTARY_CK_PIN)
+	.option('-rD, --rotaryData <rotaryData>', 'GPIO pin for rotary Data', config.ROTARY_DT_PIN)
+	.option('-rS, --rotarySwitch <rotarySwitch>', 'GPIO pin for rotary Switch', config.ROTARY_SWITCH_PIN)
+	.description('test For Rotary Helper')
+	.action(async ({rotaryClock, rotaryData, rotarySwitch, ...options}) => {
+		return new Promise(()=>{
+			rotaryClock = parseInt(rotaryClock);
+			rotaryData = parseInt(rotaryData);
+			rotarySwitch = parseInt(rotarySwitch);
+
+			const verbose = options.parent.verbose;
+			const rotaryHelper = new RotaryHelper({
+				verbose : verbose,
+				rotary : {
+					clockPin : rotaryClock,
+					dataPin : rotaryData,
+					switchPin : rotarySwitch
+				}
+			});
+			
+			rotaryHelper.on('rotation', event => {
+				console.log(event);
+			}).on('press', event => {
+				console.log(event);
+			}).on('release', event => {
+				console.log(event);
+			});
 		});
 	});
 
@@ -251,13 +283,7 @@ program
 					gCodeHelper.run();
 				}
 				
-				rotaryHelper.on('rotation', event => {
-					console.log(event);
-				}).on('press', event => {
-					console.log(event);
-				}).on('release', event => {
-					console.log(event);
-				});
+				
 			});
 		})
 		.catch(error => {
