@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-25 12:12:29
+  @Last Modified time: 2020-09-25 12:23:53
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -33,7 +33,7 @@ config.CUT_AIR_RADIUS 	= config.CUT_AIR_RADIUS || 30;
 config.AIR_CONTROL_PIN  = config.AIR_CONTROL_PIN || 7;
 config.ROTARY_CK_PIN	= config.ROTARY_CK_PIN || 16;
 config.ROTARY_DT_PIN	= config.ROTARY_DT_PIN || 18;
-config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 22;
+config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 15;
 FSHelper.saveJSONFile(config, configPath);
 
 program
