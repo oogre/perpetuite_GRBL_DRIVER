@@ -2,7 +2,7 @@
   BeatStepProMidi - RotaryHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-24 14:10:41
-  @Last Modified time: 2020-09-25 11:26:32
+  @Last Modified time: 2020-09-25 12:00:51
 \*----------------------------------------*/
 
 import rpio from "rpio";
@@ -12,14 +12,17 @@ export default class RotaryHelper{
 		this.verbose = verbose;
 		this.rotary = rotary;
 		console.log(rotary);
+		console.log(rotary.clockPin);
 		rpio.open(rotary.clockPin, rpio.INPUT);
+		console.log(rotary.dataPin);
 		rpio.open(rotary.dataPin, rpio.INPUT);
+		console.log(rotary.switchPin);
 		rpio.open(rotary.switchPin, rpio.INPUT);
 
 		rpio.poll(rotary.clockPin, ()=>{
-			console.log("rpio.read(rotary.clockPin) : ", rpio.read(rotary.clockPin), rpio.read(rpio.read(rotary.clockPin)))
-			const dtState = rpio.read(rotary.dataPin);
-			this.triger('rotation', { direction : ((dtState) * 2) - 1 });
+			console.log("rpio.read(rotary.clockPin) : ");
+			//const dtState = rpio.read(rotary.dataPin);
+			//this.triger('rotation', { direction : ((dtState) * 2) - 1 });
 		}, rpio.POLL_HIGH);
 
 		this.switchIsPressed = false;
