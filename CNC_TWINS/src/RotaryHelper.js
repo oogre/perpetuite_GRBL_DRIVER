@@ -2,7 +2,7 @@
   BeatStepProMidi - RotaryHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-24 14:10:41
-  @Last Modified time: 2020-09-25 12:23:41
+  @Last Modified time: 2020-09-25 12:25:22
 \*----------------------------------------*/
 
 import rpio from "rpio";
@@ -34,7 +34,7 @@ export default class RotaryHelper{
 			}else{
 				this.triger('release');
 			}*/
-		}, rpio.POLL_BOTH);
+		}, rpio.POLL_HIGH);
 		
 		this.eventHandlers = {};
 	}
