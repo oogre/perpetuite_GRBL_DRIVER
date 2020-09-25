@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-22 16:07:08
+  @Last Modified time: 2020-09-25 09:42:41
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -15,10 +15,10 @@ import { program } from 'commander';
 import SyncHelper from './SyncHelper.js';
 import GCodeHelper from './GCodeHelper.js';
 import AirHelper from './AirHelper.js';
+import RotaryHelper from './RotaryHelper.js';
 import FSHelper from './FSHelper.js';
 import SerialPort from "serialport";
 import SimplexNoise from 'simplex-noise';
-import Rotary from 'raspberrypi-rotary-encoder';
 
 process.title = "CNC_TWINS";
 
@@ -32,8 +32,8 @@ config.CENTER_Y 		= config.CENTER_Y || -612.939;
 config.CUT_AIR_RADIUS 	= config.CUT_AIR_RADIUS || 30;
 config.AIR_CONTROL_PIN  = config.AIR_CONTROL_PIN || 7;
 config.ROTARY_CK_PIN	= config.ROTARY_CK_PIN || 3;
-config.ROTARY_DT_PIN	= config.ROTARY_DT_PIN || 2;
-config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 0;
+config.ROTARY_DT_PIN	= config.ROTARY_DT_PIN || 5;
+config.ROTARY_SWITCH_PIN= config.ROTARY_SWITCH_PIN || 11;
 FSHelper.saveJSONFile(config, configPath);
 
 program
@@ -124,11 +124,12 @@ program
 			const lerp = (a, b, t) => a + (b - a) * Math.min(Math.max(t, 0), 1);
 			return Math.round(lerp(gCodeFeedRateMin, gCodeFeedRateMax, noise(gCodeFeedRateVariation)));
 		}
-		const kill = (message, {gCodeHelper=false, syncHelper=false, airHelper=false}) => {
+		const kill = (message, {gCodeHelper=false, syncHelper=false, airHelper=false, rotaryHelper=false}) => {
 			console.log(message);
 			gCodeHelper && gCodeHelper.send("!").off();
 			syncHelper && syncHelper.send("!").off();
-			airHelper && airHelper.disable();
+			airHelper && airHelper.off();
+			rotaryHelper && rotaryHelper.kill();
 			setTimeout(process.exit, 500);
 		}
 		SerialPort.list()
@@ -163,22 +164,16 @@ program
 				}, 
 				outputPin : airPinControl
 			});
-			if(airHelper){
-				const rotary = new Rotary(config.ROTARY_CK_PIN, config.ROTARY_DT_PIN, config.ROTARY_SWITCH_PIN);
-				rotary.on("rotate", (delta) => {
-					console.log("Rotation :"+delta);
-					//CUT_AIR_RADIUS += delta;
-					//CENTER_X += delta;
-					//CENTER_Y += delta;
-				});
-				rotary.on("pressed", () => {
-					console.log("Rotary switch pressed");
-				});
-				rotary.on("released", () => {
-					console.log("Rotary switch released");
-				});
-			}
 
+			const rotaryHelper = new RotaryHelper({
+				verbose : verbose,
+				rotary : {
+					clockPin : config.ROTARY_CK_PIN,
+					dataPin : config.ROTARY_DT_PIN,
+					switchPin : config.ROTARY_SWITCH_PIN
+				}
+			});
+			
 			if(verbose) console.log(`Loading GCodeFile : ${gCodeFileInput}`);
 			FSHelper.loadFileInArray(gCodeFileInput)
 			.then(GCodeData => {
@@ -194,19 +189,19 @@ program
 					gCodeHelper.send(line);
 					GCodeData.push(line);
 				}
-				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper, airHelper}), synchInterval*3);
-				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper, airHelper}), gCodeTimeout);
+				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper, airHelper, rotaryHelper}), synchInterval*3);
+				const gcodeTimeoutBuilder = () => setTimeout(() => kill("GCODE TIMEOUT", {gCodeHelper, syncHelper, airHelper, rotaryHelper}), gCodeTimeout);
 				
-				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
-				process.on('exit', 	event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
-				process.on('SIGUSR1', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
-				process.on('SIGUSR2', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
-				process.on('uncaughtException', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
-				process.on('SIGTERM', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper}));
+				process.on('SIGINT', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
+				process.on('exit', 	event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
+				process.on('SIGUSR1', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
+				process.on('SIGUSR2', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
+				process.on('uncaughtException', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
+				process.on('SIGTERM', event => kill("kill requested", {gCodeHelper, syncHelper, airHelper, rotaryHelper}));
 				
 				gCodeHelper
-				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper, airHelper}))
-				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper, airHelper}))
+				.on("ALARM", event => kill("ALARM received", {gCodeHelper, syncHelper, airHelper, rotaryHelper}))
+				.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper, airHelper, rotaryHelper}))
 				.once(`ready`, event => {
 					STATE_ID ++;
 					const action = () => gCodeHelper.goHome();
@@ -231,11 +226,11 @@ program
 					synchEnabled ? syncHelper.once("sync", event => action()) : action();
 				});
 
-				if(!synchEnabled){
+				if(!syncHelper){
 					gCodeHelper.run();
 				}else{
 					syncHelper
-					.on("!", () => kill("KILL ORDERED", {gCodeHelper, airHelper}))
+					.on("!", () => kill("KILL ORDERED", {gCodeHelper, airHelper, rotaryHelper}))
 					.on("ready", () => gCodeHelper.run())
 					.on("ping", event => {
 						syncHelper.send("pong", {
@@ -251,6 +246,14 @@ program
 						PING_TIMEOUT_HANDLER = pingTimeoutBuilder();
 					}).run();
 				}
+				
+				rotaryHelper.on('rotation', event => {
+					console.log(event);
+				}).on('press', event => {
+					console.log(event);
+				}).on('release', event => {
+					console.log(event);
+				});
 			});
 		})
 		.catch(error => {
