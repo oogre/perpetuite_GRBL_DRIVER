@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 13:07:55
+  @Last Modified time: 2020-09-29 14:24:04
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -176,7 +176,7 @@ program
 			gCodeHelper && gCodeHelper.send("!").off();
 			syncHelper && syncHelper.send("!").off();
 			airHelper && airHelper.off();
-			rotaryHelper && rotaryHelper.kill();
+			//rotaryHelper && rotaryHelper.kill();
 			setTimeout(process.exit, 500);
 		}
 		SerialPort.list()
@@ -295,20 +295,23 @@ program
 				}else{
 					gCodeHelper.run();
 				}
-				rotaryHelper.on('rotation', event => {
-					if(airHelper){
-						config.CUT_AIR_RADIUS = airHelper.getRadius() + event.direction;
-						airHelper.setRadius(config.CUT_AIR_RADIUS);
-						FSHelper.saveJSONFile(config, configPath);
-					}
-				})
-				.on('release', event => {
-					if(airHelper){
-						config.CUT_AIR_RADIUS = config.DEFAULT_CUT_AIR_RADIUS;
-						airHelper.setRadius(config.CUT_AIR_RADIUS);
-						FSHelper.saveJSONFile(config, configPath);
-					}
-				});
+
+				if(rotaryHelper){
+					rotaryHelper.on('rotation', event => {
+						if(airHelper){
+							config.CUT_AIR_RADIUS = airHelper.getRadius() + event.direction;
+							airHelper.setRadius(config.CUT_AIR_RADIUS);
+							FSHelper.saveJSONFile(config, configPath);
+						}
+					})
+					.on('release', event => {
+						if(airHelper){
+							config.CUT_AIR_RADIUS = config.DEFAULT_CUT_AIR_RADIUS;
+							airHelper.setRadius(config.CUT_AIR_RADIUS);
+							FSHelper.saveJSONFile(config, configPath);
+						}
+					});
+				}
 			});
 		})
 		.catch(error => {
