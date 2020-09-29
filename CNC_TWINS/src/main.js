@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 14:38:48
+  @Last Modified time: 2020-09-29 14:54:19
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -71,6 +71,7 @@ program
 		});
 	});
 
+
 program
 	.command('rotary')
 	.option('-rC, --rotaryClock <rotaryClock>', 'GPIO pin for rotary clock', config.ROTARY_CK_PIN)
@@ -102,6 +103,57 @@ program
 			});
 		});
 	});
+
+
+program
+	.command('air-rotary')
+	.option('-aP, --airPinControl <airPinControl>', 'GPIO pin for air control', config.AIR_CONTROL_PIN)
+	
+	.option('-rC, --rotaryClock <rotaryClock>', 'GPIO pin for rotary clock', config.ROTARY_CK_PIN)
+	.option('-rD, --rotaryData <rotaryData>', 'GPIO pin for rotary Data', config.ROTARY_DT_PIN)
+	.option('-rS, --rotarySwitch <rotarySwitch>', 'GPIO pin for rotary Switch', config.ROTARY_SWITCH_PIN)
+	
+	.description('test For Air Helper')
+	.action(async ({airPinControl, rotaryClock, rotaryData, rotarySwitch, ...options}) => {
+		return new Promise(()=>{
+			airPinControl = parseInt(airPinControl);
+
+			rotaryClock = parseInt(rotaryClock);
+			rotaryData = parseInt(rotaryData);
+			rotarySwitch = parseInt(rotarySwitch);
+
+			const verbose = options.parent.verbose;
+			const airHelper = new AirHelper({
+				verbose : verbose,
+				outputPin : airPinControl
+			});	
+
+			const rotaryHelper = new RotaryHelper({
+				verbose : verbose,
+				rotary : {
+					clockPin : rotaryClock,
+					dataPin : rotaryData,
+					switchPin : rotarySwitch
+				}
+			});
+			
+			rotaryHelper.on('rotation', event => {
+				console.log(event);
+			}).on('press', event => {
+				console.log(event);
+			}).on('release', event => {
+				console.log(event);
+			});
+			
+			let flag = true;
+			setInterval(()=>{
+				if(flag)airHelper.enable();	
+				else airHelper.disable();
+				flag = !flag;
+			}, 1000);
+		});
+	});
+
 
 program
 	.command('run')
