@@ -2,7 +2,7 @@
   BeatStepProMidi - RotaryHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-24 14:10:41
-  @Last Modified time: 2020-09-29 12:13:09
+  @Last Modified time: 2020-09-29 12:28:43
 \*----------------------------------------*/
 
 import rpio from "rpio";
@@ -48,6 +48,9 @@ export default class RotaryHelper{
 	}
 	triger(eventName, event={}){
 		event.eventName = eventName;
+		if(this.verbose){
+			console.log(event);
+		}
 		(this.eventHandlers[eventName]||[]).map(fnc=>fnc(event));
 		return this;
 	}
