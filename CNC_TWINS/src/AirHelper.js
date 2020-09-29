@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-29 14:45:15
+  @Last Modified time: 2020-09-29 14:58:49
 \*----------------------------------------*/
 
 
@@ -43,10 +43,10 @@ export default class AirHelper{
 			this.onOutside();
 		}
 	}
-	setROI(regionOfInterest){
-		this.roi.x = regionOfInterest.x;
-		this.roi.y = regionOfInterest.y;
-		this.setRadius(regionOfInterest.r);
+	setROI({x=0, y=0, r=0}){
+		this.roi.x = x;
+		this.roi.y = y;
+		this.setRadius(r);
 		return this;
 	}
 	setRadius(r){
