@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-29 12:59:43
+  @Last Modified time: 2020-09-29 13:05:57
 \*----------------------------------------*/
 
 
@@ -13,6 +13,7 @@ export default class AirHelper{
 		this.verbose = verbose;
 		this.outputPin = outputPin;
 		rpio.open(outputPin, rpio.OUTPUT, rpio.LOW);
+		this.roi = {};
 		this.setROI(regionOfInterest);
 		this.isInside = false;
 		this.wasInside = false;
