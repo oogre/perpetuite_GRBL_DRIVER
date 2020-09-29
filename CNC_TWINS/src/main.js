@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 13:04:49
+  @Last Modified time: 2020-09-29 13:07:55
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -27,7 +27,6 @@ const configPath = `${libPath}/../conf/conf.json`;
 const gCODEPath = `${libPath}/../GCODE/${require('os').hostname()}.nc`;
 
 
-
 let config = FSHelper.loadJSONFile(configPath);
 config.CENTER_X 				= config.CENTER_X || -1069.056;
 config.CENTER_Y 				= config.CENTER_Y || -612.939;
@@ -38,6 +37,7 @@ config.ROTARY_CK_PIN			= config.ROTARY_CK_PIN || 16;
 config.ROTARY_DT_PIN			= config.ROTARY_DT_PIN || 18;
 config.ROTARY_SWITCH_PIN		= config.ROTARY_SWITCH_PIN || 15;
 FSHelper.saveJSONFile(config, configPath);
+console.log(config);
 
 program
 	.option('-v, --verbose', 'verbose');
