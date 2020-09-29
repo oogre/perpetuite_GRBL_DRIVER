@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 14:54:19
+  @Last Modified time: 2020-09-29 16:28:16
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -64,8 +64,12 @@ program
 			});	
 			let flag = true;
 			setInterval(()=>{
-				if(flag)airHelper.enable();	
-				else airHelper.disable();
+				if(flag){
+					airHelper.enable();	
+				}
+				else{
+					airHelper.disable();
+				}
 				flag = !flag;
 			}, 1000);
 		});
@@ -147,8 +151,14 @@ program
 			
 			let flag = true;
 			setInterval(()=>{
-				if(flag)airHelper.enable();	
-				else airHelper.disable();
+				if(flag){
+					rotaryHelper.disable();
+					airHelper.enable();	
+				}
+				else{
+					airHelper.disable();
+					rotaryHelper.enable();
+				}
 				flag = !flag;
 			}, 1000);
 		});
