@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 16:37:35
+  @Last Modified time: 2020-09-29 16:49:28
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -145,7 +145,7 @@ program
 				rotaryHelper.disable();
 			}).on("afterSwitch", event => {
 				rotaryHelper.enable();
-			})
+			});
 			
 			rotaryHelper.on('rotation', event => {
 				console.log(event);

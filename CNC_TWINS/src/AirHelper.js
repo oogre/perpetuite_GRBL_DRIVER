@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-29 16:48:01
+  @Last Modified time: 2020-09-29 16:49:37
 \*----------------------------------------*/
 
 
@@ -72,7 +72,7 @@ export default class AirHelper{
 		if(rpio.read(this.outputPin) != rpio.HIGH){
 			this.triger("beforeSwitch");
 			rpio.write(this.outputPin, rpio.HIGH);
-			setTimeout(() => this.triger("afterSwitch"), 200);	
+			setTimeout(() => this.triger("afterSwitch"), 100);	
 		}
 		return this;
 	}
@@ -80,7 +80,7 @@ export default class AirHelper{
 		if(rpio.read(this.outputPin) != rpio.LOW){
 			this.triger("beforeSwitch");
 			rpio.write(this.outputPin, rpio.LOW);
-			setTimeout(()=>this.triger("afterSwitch"), 200);
+			setTimeout(()=>this.triger("afterSwitch"), 100);
 		}
 		return this;
 	}
@@ -92,7 +92,7 @@ export default class AirHelper{
 	triger(eventName, event={}){
 		event.eventName = eventName;
 		if(this.verbose){
-			console.log(event);
+			//console.log(event);
 		}
 		(this.eventHandlers[eventName]||[]).map(fnc=>fnc(event));
 		return this;
