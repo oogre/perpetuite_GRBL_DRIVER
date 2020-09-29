@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 14:24:41
+  @Last Modified time: 2020-09-29 14:31:09
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -277,7 +277,7 @@ program
 
 				if(syncHelper){
 					syncHelper
-					.on("!", () => kill("KILL ORDERED", {gCodeHelper, airHelper, rotaryHelper}))
+					.on("!", () => kill("KILL ORDERED", {gCodeHelper, airHelper}))
 					.on("ready", () => gCodeHelper.run())
 					.on("ping", event => {
 						syncHelper.send("pong", {
