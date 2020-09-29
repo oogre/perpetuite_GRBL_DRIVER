@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-29 16:36:11
+  @Last Modified time: 2020-09-29 16:40:29
 \*----------------------------------------*/
 
 
@@ -60,12 +60,6 @@ export default class AirHelper{
 	getRadius(){
 		return this.roi.r;
 	}
-	onEnter(){
-		return this;
-	}
-	onLeave(){
-		return this;
-	}
 	onInside(){
 		this.disable();	
 		return this;
@@ -75,19 +69,19 @@ export default class AirHelper{
 		return this;
 	}
 	enable(){
-		this.triger("onBeforeSwitch");
-		rpio.write(this.outputPin, rpio.HIGH);
-		setTimeout(()=>{
-			this.triger("onAfterSwitch");
-		}, 100);
+		if(rpio.read(this.outputPin) != rpio.HIGH){
+			this.triger("onBeforeSwitch");
+			rpio.write(this.outputPin, rpio.HIGH);
+			setTimeout(() => this.triger("onAfterSwitch"), 100);	
+		}
 		return this;
 	}
 	disable(){
-		this.triger("onBeforeSwitch");
-		rpio.write(this.outputPin, rpio.LOW);
-		setTimeout(()=>{
-			this.triger("onAfterSwitch");
-		}, 100);
+		if(rpio.read(this.outputPin) != rpio.LOW){
+			this.triger("onBeforeSwitch");
+			rpio.write(this.outputPin, rpio.LOW);
+			setTimeout(()=>this.triger("onAfterSwitch"), 100);
+		}
 		return this;
 	}
 	off(){
@@ -96,8 +90,6 @@ export default class AirHelper{
 		rpio.exit();
 	}
 	triger(eventName, event={}){
-		if(!this._enable)return;
-		
 		event.eventName = eventName;
 		if(this.verbose){
 			console.log(event);
