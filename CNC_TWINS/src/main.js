@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 16:49:28
+  @Last Modified time: 2020-09-29 16:52:11
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -357,8 +357,14 @@ program
 				}else{
 					gCodeHelper.run();
 				}
-
 				if(rotaryHelper){
+					if(airHelper){
+						airHelper.on("beforeSwitch", event => {
+							rotaryHelper.disable();
+						}).on("afterSwitch", event => {
+							rotaryHelper.enable();
+						});
+					}
 					rotaryHelper.on('rotation', event => {
 						if(airHelper){
 							config.CUT_AIR_RADIUS = airHelper.getRadius() + event.direction;
