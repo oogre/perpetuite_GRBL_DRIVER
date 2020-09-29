@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 13:00:17
+  @Last Modified time: 2020-09-29 13:04:49
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -133,7 +133,7 @@ program
 	.option('-rS, --rotarySwitch <rotarySwitch>', 'GPIO pin for rotary Switch', config.ROTARY_SWITCH_PIN)
 	
 	.description('run for perpetuity in sync with another machine')
-	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeDisabled, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX, airRegionOfInterestY, airRegionOfInterestR, rotaryClock, rotaryData, rotarySwitch, ...options}) => {
+	.action(({synchDisabled, synchSerialName, synchBaudrate, synchInterval, gCodeDisabled, gCodeSerialName, gCodeBaudrate, gCodeFeedRateToken, gCodeFeedRateMin, gCodeFeedRateMax, gCodeFeedRateVariation, gCodeFileInput, gCodeTimeout, airDisabled, airPinControl, airRegionOfInterestX, airRegionOfInterestY, airRegionOfInterestR, rotaryDisabled, rotaryClock, rotaryData, rotarySwitch, ...options}) => {
 		
 		synchInterval = parseInt(synchInterval);
 		synchBaudrate = parseInt(synchBaudrate);
@@ -157,7 +157,7 @@ program
 		const gCodeEnabled = !gCodeDisabled;
 		const synchEnabled = !synchDisabled;
 		const airEnabled = !airDisabled;
-		const rotaryEnabled = !rotaryDisabled
+		const rotaryEnabled = !rotaryDisabled;
 		
 		let GCODE_TIMEOUT_HANDLER;
 		let PING_TIMEOUT_HANDLER;
