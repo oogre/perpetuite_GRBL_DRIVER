@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-29 15:00:29
+  @Last Modified time: 2020-09-29 16:36:11
 \*----------------------------------------*/
 
 
@@ -17,6 +17,7 @@ export default class AirHelper{
 		this.setROI(regionOfInterest);
 		this.isInside = false;
 		this.wasInside = false;
+		this.eventHandlers = {};
 	}
 	update(position){
 		this.wasInside = this.isInside;
@@ -74,16 +75,48 @@ export default class AirHelper{
 		return this;
 	}
 	enable(){
+		this.triger("onBeforeSwitch");
 		rpio.write(this.outputPin, rpio.HIGH);
+		setTimeout(()=>{
+			this.triger("onAfterSwitch");
+		}, 100);
 		return this;
 	}
 	disable(){
+		this.triger("onBeforeSwitch");
 		rpio.write(this.outputPin, rpio.LOW);
+		setTimeout(()=>{
+			this.triger("onAfterSwitch");
+		}, 100);
 		return this;
 	}
 	off(){
 		this.disable();
 		rpio.close(this.outputPin);
 		rpio.exit();
+	}
+	triger(eventName, event={}){
+		if(!this._enable)return;
+		
+		event.eventName = eventName;
+		if(this.verbose){
+			console.log(event);
+		}
+		(this.eventHandlers[eventName]||[]).map(fnc=>fnc(event));
+		return this;
+	}
+	on(eventName, fnc){
+		this.eventHandlers[eventName] = this.eventHandlers[eventName] || [];
+		this.eventHandlers[eventName].push(fnc);
+		return this;
+	}
+	once(eventName, fnc){
+		this.eventHandlers[eventName] = this.eventHandlers[eventName] || [];
+		const wrappedFnc = event => {
+			fnc(event);
+			fnc=()=>{};
+		}
+		this.eventHandlers[eventName].push(wrappedFnc);
+		return this;
 	}
 }
