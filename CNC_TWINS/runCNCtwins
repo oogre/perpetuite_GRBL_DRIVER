@@ -17,6 +17,9 @@ debug)
 debug-no-rotary)
 	cncTwins -v run -rD 1 -sN /dev/ttyS0 -gI /home/pi/perpetuite_GRBL_DRIVER/CNC_TWINS/GCode/`hostname`.nc #scriptarguments
 ;;
+debug-air-rotary)
+	cncTwins -v air-rotary  #scriptarguments
+;;
 stop)
 	killall CNC_TWINS
 ;;
