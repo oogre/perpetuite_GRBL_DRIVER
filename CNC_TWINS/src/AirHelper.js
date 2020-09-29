@@ -2,7 +2,7 @@
   Perpetuite - AirHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-15 07:36:15
-  @Last Modified time: 2020-09-29 16:49:37
+  @Last Modified time: 2020-09-29 17:01:20
 \*----------------------------------------*/
 
 
@@ -15,12 +15,9 @@ export default class AirHelper{
 		rpio.open(outputPin, rpio.OUTPUT, rpio.LOW);
 		this.roi = {};
 		this.setROI(regionOfInterest);
-		this.isInside = false;
-		this.wasInside = false;
 		this.eventHandlers = {};
 	}
 	update(position){
-		this.wasInside = this.isInside;
 		const x = position.x-this.roi.x;
 		const y = position.y-this.roi.y;
 		const sqDist = x * x + y * y;
@@ -28,19 +25,8 @@ export default class AirHelper{
 			console.log(`Dist : ${Math.sqrt(sqDist)} : ${Math.sqrt(this.roi.r)}`);
 		}
 		if( sqDist < this.roi.sqR ){
-			this.isInside = true;
-		}else {
-			this.isInside = false;
-		}
-		if(this.isInside && !this.wasInside){
-			this.onEnter();
-		}
-		else if(!this.isInside && this.wasInside){
-			this.onLeave();
-		}
-		if(this.isInside){
 			this.onInside();
-		}else{
+		}else {
 			this.onOutside();
 		}
 	}
