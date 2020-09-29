@@ -2,7 +2,7 @@
   BeatStepProMidi - RotaryHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-09-24 14:10:41
-  @Last Modified time: 2020-09-29 16:30:50
+  @Last Modified time: 2020-09-29 16:46:33
 \*----------------------------------------*/
 
 import rpio from "rpio";
@@ -51,9 +51,11 @@ export default class RotaryHelper{
 	}
 
 	disable(){
+		console.log("RotaryHelper disabled");
 		this._enable = false;
 	}
 	enable(){
+		console.log("RotaryHelper enabled");
 		this._enable = true;	
 	}
 
