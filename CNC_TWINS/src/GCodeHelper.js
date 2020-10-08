@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2020-09-22 14:58:30
+  @Last Modified time: 2020-10-08 11:25:50
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -108,7 +108,7 @@ class GCodeHelperTool{
 }
 GCodeHelperTool.serialPort;
 GCodeHelperTool.eventHandlers = {};
-GCodeHelperTool.STATUS_INTERVAL = 500;
+GCodeHelperTool.STATUS_INTERVAL = 250;
 GCodeHelperTool.STATUS_HANDLER;
 GCodeHelperTool.MACHINE = {
 	STATE : undefined,

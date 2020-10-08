@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-09-29 16:52:11
+  @Last Modified time: 2020-10-08 11:08:57
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -367,7 +367,7 @@ program
 					}
 					rotaryHelper.on('rotation', event => {
 						if(airHelper){
-							config.CUT_AIR_RADIUS = airHelper.getRadius() + event.direction;
+							config.CUT_AIR_RADIUS = airHelper.getRadius() + event.direction*0.25;
 							airHelper.setRadius(config.CUT_AIR_RADIUS);
 							FSHelper.saveJSONFile(config, configPath);
 						}
