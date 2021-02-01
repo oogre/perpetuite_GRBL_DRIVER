@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2021-02-01 10:19:59
+  @Last Modified time: 2021-02-01 11:17:13
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -229,28 +229,13 @@ program
 		let STATE_ID = 0 ; 
 		let x = 0;
 		let y = 0;
-		let t0 = 0 ; 
+		let t0 = 0; 
 		let selfDuration = 0 ; 
 		let otherDuration = 0 ; 
 		let gCodeFeedRate = Math.round((gCodeFeedRateMin + gCodeFeedRateMax)*0.5);
 
 
-		const simplex = new SimplexNoise();
-		const getFeedRate = () => {
-			if(otherDuration != 0 && selfDuration != 0){
-				let dist = otherDuration - selfDuration;
-				if(dist != 0){
-					console.log("gCodeFeedRate fitting");
-					//FEEDRATE FITTER
-					gCodeFeedRate += dist < 0 ? 1 : -1;	
-					//FEEDRATE LIMITER
-					gCodeFeedRate = Math.min(gCodeFeedRate, gCodeFeedRateMax);
-					gCodeFeedRate = Math.max(gCodeFeedRate, gCodeFeedRateMin);
-				}
-			}
-			console.log("gCodeFeedRate", gCodeFeedRate);
-			return gCodeFeedRate;
-		}
+		
 		const kill = (message, {gCodeHelper=false, syncHelper=false, airHelper=false, rotaryHelper=false}) => {
 			console.log(message);
 			gCodeHelper && gCodeHelper.send("!").off();
@@ -312,16 +297,27 @@ program
 						console.log("CHRONO TAG DETECTED", GCODE_START_TOKEN);
 						GCodeData.push(GCodeData.shift());
 						const t = Date.now();
+						if(t0 == 0){
+							t0 = t;
+						}
 						selfDuration = t - t0;
 						t0 = t;
+						if(otherDuration != 0 && selfDuration != 0){
+							let dist = otherDuration - selfDuration;
+							if(dist != 0){
+								//FEEDRATE FITTER
+								gCodeFeedRate += dist < 0 ? 1 : -1;	
+								//FEEDRATE LIMITER
+								gCodeFeedRate = Math.min(gCodeFeedRate, gCodeFeedRateMax);
+								gCodeFeedRate = Math.max(gCodeFeedRate, gCodeFeedRateMin);
+								console.log("gCodeFeedRate fitted", gCodeFeedRate);
+							}
+						}
 					}
 					clearTimeout(GCODE_TIMEOUT_HANDLER);
 					GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
 					let line = GCodeData.shift();
-					if(line.includes(gCodeFeedRateToken)){
-						line = line.replace(gCodeFeedRateToken, `F${getFeedRate()}`);
-					}
-					gCodeHelper.send(line);
+					gCodeHelper.send(line.replace(gCodeFeedRateToken, `F${gCodeFeedRate}`));
 					GCodeData.push(line);
 				}
 				const pingTimeoutBuilder = () => setTimeout(() => kill("SYNC TIMEOUT", {gCodeHelper, syncHelper, airHelper}), synchInterval*3);
