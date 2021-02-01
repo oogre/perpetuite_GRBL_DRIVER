@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2021-02-01 11:28:03
+  @Last Modified time: 2021-02-01 11:28:42
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -311,7 +311,7 @@ program
 								gCodeFeedRate = Math.min(gCodeFeedRate, gCodeFeedRateMax);
 								gCodeFeedRate = Math.max(gCodeFeedRate, gCodeFeedRateMin);
 								console.log("selfDuration", selfDuration);
-								console.log("otherDuration", otherDuration
+								console.log("otherDuration", otherDuration);
 								console.log("dist", dist);
 								console.log("gCodeFeedRate fitted", gCodeFeedRate);
 							}
