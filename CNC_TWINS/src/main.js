@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2021-02-01 11:28:42
+  @Last Modified time: 2021-02-01 12:21:31
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -294,7 +294,7 @@ program
 				const sendLine = () => {
 					if(GCodeData[0] === GCODE_START_TOKEN){
 						// CHRONO TAG DETECTED
-						console.log("CHRONO TAG DETECTED", GCODE_START_TOKEN);
+						if(verbose) console.log("CHRONO TAG DETECTED", GCODE_START_TOKEN);
 						GCodeData.push(GCodeData.shift());
 						const t = Date.now();
 						if(t0 == 0){
@@ -310,10 +310,12 @@ program
 								//FEEDRATE LIMITER
 								gCodeFeedRate = Math.min(gCodeFeedRate, gCodeFeedRateMax);
 								gCodeFeedRate = Math.max(gCodeFeedRate, gCodeFeedRateMin);
-								console.log("selfDuration", selfDuration);
-								console.log("otherDuration", otherDuration);
-								console.log("dist", dist);
-								console.log("gCodeFeedRate fitted", gCodeFeedRate);
+								if(verbose) {
+									console.log("selfDuration", selfDuration);
+									console.log("otherDuration", otherDuration);
+									console.log("dist", dist);
+									console.log("gCodeFeedRate fitted", gCodeFeedRate);
+								}
 							}
 						}
 					}
