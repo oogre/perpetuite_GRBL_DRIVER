@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2020-10-08 11:08:57
+  @Last Modified time: 2021-02-01 10:19:59
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -22,6 +22,7 @@ import SimplexNoise from 'simplex-noise';
 
 process.title = "CNC_TWINS";
 
+const GCODE_START_TOKEN = ";(START_OF_DRAWING)";
 const libPath = __dirname;
 const configPath = `${libPath}/../conf/conf.json`;
 const gCODEPath = `${libPath}/../GCODE/${require('os').hostname()}.nc`;
@@ -177,8 +178,8 @@ program
 	.option('-gN, --gCodeSerialName <gCodeSerialName>', 'Serial name for GCODE channel', "/dev/ttyACM0")
 	.option('-gB, --gCodeBaudrate <gCodeBaudrate>', 'Serial baudrate for GCODE channel', 115200)
 	.option('-gFt, --gCodeFeedRateToken <gCodeFeedRateToken>', 'FeedRate TOKEN', "F3000")
-	.option('-gFM, --gCodeFeedRateMin <gCodeFeedRateMin>', 'Minimum FeedRate of the machine', 3000)
-	.option('-gFM, --gCodeFeedRateMax <gCodeFeedRateMax>', 'Maximum FeedRate of the machine', 3000)
+	.option('-gFM, --gCodeFeedRateMin <gCodeFeedRateMin>', 'Minimum FeedRate of the machine', 2990)
+	.option('-gFM, --gCodeFeedRateMax <gCodeFeedRateMax>', 'Maximum FeedRate of the machine', 3010)
 	.option('-gFv, --gCodeFeedRateVariation <gCodeFeedRateVariation>', 'FeedRate variation of the machine', 0.05)
 	.option('-gT, --gCodeTimeout <gCodeTimeout>', 'Max duration for a GCODE line to process', 30000)
 	.option('-gI, --gCodeFileInput <gCodeFileInput>', 'Path of the GCODE file to send', gCODEPath)
@@ -204,6 +205,7 @@ program
 		gCodeTimeout  = parseInt(gCodeTimeout);
 		gCodeFeedRateMin = parseInt(gCodeFeedRateMin);
 		gCodeFeedRateMax = parseInt(gCodeFeedRateMax);
+
 		gCodeFeedRateVariation = parseFloat(gCodeFeedRateVariation);
 		
 		airPinControl = parseInt(airPinControl);
@@ -220,18 +222,34 @@ program
 		const synchEnabled = !synchDisabled;
 		const airEnabled = !airDisabled;
 		const rotaryEnabled = !rotaryDisabled;
-		
+
+
 		let GCODE_TIMEOUT_HANDLER;
 		let PING_TIMEOUT_HANDLER;
 		let STATE_ID = 0 ; 
 		let x = 0;
 		let y = 0;
+		let t0 = 0 ; 
+		let selfDuration = 0 ; 
+		let otherDuration = 0 ; 
+		let gCodeFeedRate = Math.round((gCodeFeedRateMin + gCodeFeedRateMax)*0.5);
+
 
 		const simplex = new SimplexNoise();
 		const getFeedRate = () => {
-			const noise = (xInc=0, yInc=0) => simplex.noise2D(x+=xInc, y+=yInc) * 0.5 + 0.5;
-			const lerp = (a, b, t) => a + (b - a) * Math.min(Math.max(t, 0), 1);
-			return Math.round(lerp(gCodeFeedRateMin, gCodeFeedRateMax, noise(gCodeFeedRateVariation)));
+			if(otherDuration != 0 && selfDuration != 0){
+				let dist = otherDuration - selfDuration;
+				if(dist != 0){
+					console.log("gCodeFeedRate fitting");
+					//FEEDRATE FITTER
+					gCodeFeedRate += dist < 0 ? 1 : -1;	
+					//FEEDRATE LIMITER
+					gCodeFeedRate = Math.min(gCodeFeedRate, gCodeFeedRateMax);
+					gCodeFeedRate = Math.max(gCodeFeedRate, gCodeFeedRateMin);
+				}
+			}
+			console.log("gCodeFeedRate", gCodeFeedRate);
+			return gCodeFeedRate;
 		}
 		const kill = (message, {gCodeHelper=false, syncHelper=false, airHelper=false, rotaryHelper=false}) => {
 			console.log(message);
@@ -289,6 +307,14 @@ program
 				if(verbose) console.log(`GCode : `, GCodeData);
 				
 				const sendLine = () => {
+					if(GCodeData[0] === GCODE_START_TOKEN){
+						// CHRONO TAG DETECTED
+						console.log("CHRONO TAG DETECTED", GCODE_START_TOKEN);
+						GCodeData.push(GCodeData.shift());
+						const t = Date.now();
+						selfDuration = t - t0;
+						t0 = t;
+					}
 					clearTimeout(GCODE_TIMEOUT_HANDLER);
 					GCODE_TIMEOUT_HANDLER = gcodeTimeoutBuilder();
 					let line = GCodeData.shift();
@@ -319,7 +345,13 @@ program
 					})
 					.once("atHome", event => {
 						STATE_ID ++;
-						const action = () => gCodeHelper.goStartPosition(GCodeData.shift());
+						const action = () => {
+							let r = gCodeHelper.goStartPosition(GCodeData.shift());
+							// PUSH GCODE_START_TOKEN AT FIRST LINE USED AS CHRONO TAG
+							GCodeData.unshift(GCODE_START_TOKEN);
+							console.log("ADD CHRONO TAG");
+						};
+
 						synchEnabled ? syncHelper.once("sync", event => action()) : action();
 					})
 					.once("atStartPoint", event => {
@@ -344,10 +376,18 @@ program
 					.on("ping", event => {
 						syncHelper.send("pong", {
 							state : gCodeHelper.getMachineInfo().STATE,
-							stateID : STATE_ID
+							stateID : STATE_ID,
+							duration : selfDuration
 						});
 					})
 					.on("pong", event => {
+						if(Number.isInteger(event.data.duration)){
+							otherDuration = event.data.duration;	
+							console.log("Get Other Duration", otherDuration);
+						}else{
+							console.log("THERE IS NO DURATION : ", event.data.duration);
+						}
+						
 						if(event.data.stateID >= STATE_ID){
 							syncHelper.triger("sync", event);
 						}
