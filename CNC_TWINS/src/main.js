@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2021-02-01 12:21:31
+  @Last Modified time: 2021-02-01 13:31:17
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -341,23 +341,33 @@ program
 					.on("ERROR", event => kill("ERROR received", {gCodeHelper, syncHelper, airHelper}))
 					.once(`ready`, event => {
 						STATE_ID ++;
+						console.log(`ready`)
 						const action = () => gCodeHelper.goHome();
-						synchEnabled ? syncHelper.once("sync", event => action()) : action();
+						synchEnabled ? syncHelper.once("sync", event => {
+							console.log("sync", "goHome")
+							action()
+						}) : action();
 					})
 					.once("atHome", event => {
 						STATE_ID ++;
+						console.log(`atHome`)
 						const action = () => {
+							console.log("sync", "goStartPosition")
 							let r = gCodeHelper.goStartPosition(GCodeData.shift());
 							// PUSH GCODE_START_TOKEN AT FIRST LINE USED AS CHRONO TAG
 							GCodeData.unshift(GCODE_START_TOKEN);
-							console.log("ADD CHRONO TAG");
+							if(verbose) console.log("ADD CHRONO TAG");
 						};
 
-						synchEnabled ? syncHelper.once("sync", event => action()) : action();
+						synchEnabled ? syncHelper.once("sync", event => {
+							action()
+						}) : action();
 					})
 					.once("atStartPoint", event => {
 						STATE_ID ++;
+						console.log(`atStartPoint`)
 						const action = () => {
+							console.log("sync", "run")
 							gCodeHelper.on(`move`, event => airHelper.update(event.machine.POS));
 							sendLine();
 							gCodeHelper.on("emptyBuffer", event => {
