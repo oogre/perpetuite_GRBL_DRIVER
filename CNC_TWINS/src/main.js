@@ -3,7 +3,7 @@
   GCODE - main.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 17:38:22
-  @Last Modified time: 2021-02-01 11:17:13
+  @Last Modified time: 2021-02-01 11:28:03
 \*----------------------------------------*/
 
 // Eraser Fail to Homing...
@@ -310,6 +310,9 @@ program
 								//FEEDRATE LIMITER
 								gCodeFeedRate = Math.min(gCodeFeedRate, gCodeFeedRateMax);
 								gCodeFeedRate = Math.max(gCodeFeedRate, gCodeFeedRateMin);
+								console.log("selfDuration", selfDuration);
+								console.log("otherDuration", otherDuration
+								console.log("dist", dist);
 								console.log("gCodeFeedRate fitted", gCodeFeedRate);
 							}
 						}
@@ -379,9 +382,8 @@ program
 					.on("pong", event => {
 						if(Number.isInteger(event.data.duration)){
 							otherDuration = event.data.duration;	
-							console.log("Get Other Duration", otherDuration);
 						}else{
-							console.log("THERE IS NO DURATION : ", event.data.duration);
+							//console.log("THERE IS NO DURATION : ", event.data.duration);
 						}
 						
 						if(event.data.stateID >= STATE_ID){

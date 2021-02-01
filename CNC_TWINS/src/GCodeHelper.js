@@ -2,7 +2,7 @@
   GCODE - gCodeHelper.js
   @author Evrard Vincent (vincent@ogre.be)
   @Date:   2020-08-21 19:46:37
-  @Last Modified time: 2021-02-01 11:17:59
+  @Last Modified time: 2021-02-01 11:27:05
 \*----------------------------------------*/
 
 import SerialPort from "serialport";
@@ -96,7 +96,6 @@ class GCodeHelperTool{
 		if(verbose){
 			//console.log(`GCodeHelper : <<`, data);
 		}
-		console.log(`GCodeHelper : <<`, data);
 		GCodeHelperTool.serialPort.write(`${data}\n`);
 		GCodeHelperTool.MACHINE.BUFFER_LEN++;
 	}
